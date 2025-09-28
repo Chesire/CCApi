@@ -71,7 +71,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Run static analysis
-        run: ./gradlew check -x test --no-daemon
+        run: ./gradlew check -x test --no-daemon --continue
 
   test:
     name: Run Tests
@@ -104,7 +104,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Run tests
-        run: ./gradlew test --no-daemon
+        run: ./gradlew test --no-daemon --continue
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
