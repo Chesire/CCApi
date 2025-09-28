@@ -1,5 +1,6 @@
 package com.chesire.capi.controller
 
+import com.chesire.capi.dto.ChallengeDto
 import com.chesire.capi.service.ChallengeService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -14,13 +15,13 @@ import org.springframework.web.bind.annotation.RestController
 class ChallengeController(private val challengeService: ChallengeService) {
 
     @GetMapping("/{userId}")
-    fun getChallenges(@PathVariable userId: Long): ResponseEntity<String> {
+    fun getChallenges(@PathVariable userId: Long): ResponseEntity<List<ChallengeDto>> {
         // TODO: Need to get all user challenges by their id, return as a JSON array.
         return ResponseEntity.notFound().build()
     }
 
     @GetMapping("/{challengeId}")
-    fun getChallenge(@PathVariable challengeId: Long): ResponseEntity<String> {
+    fun getChallenge(@PathVariable challengeId: Long): ResponseEntity<ChallengeDto> {
         // TODO: Need to get a single challenge by its ID, return as a JSON object.
         return ResponseEntity.notFound().build()
     }
