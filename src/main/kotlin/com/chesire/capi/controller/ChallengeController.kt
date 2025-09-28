@@ -1,5 +1,6 @@
 package com.chesire.capi.controller
 
+import com.chesire.capi.service.ChallengeService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/challenge")
-class ChallengeController {
+class ChallengeController(private val challengeService: ChallengeService) {
 
     @GetMapping("/{userId}")
     fun getChallenges(@PathVariable userId: Long): ResponseEntity<String> {
