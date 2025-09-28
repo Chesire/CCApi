@@ -3,10 +3,13 @@ package com.chesire.capi.service
 import com.chesire.capi.dto.PostChallengeDto
 import com.chesire.capi.dto.RetrieveChallengeDto
 import com.chesire.capi.models.TimeFrame
+import com.chesire.capi.repository.ChallengeRepository
 import org.springframework.stereotype.Service
 
 @Service
-class ChallengeService() {
+class ChallengeService(
+    private val repository: ChallengeRepository
+) {
 
     fun getChallenges(userId: Long): GetChallengesResult {
         // TODO: Perform the get
