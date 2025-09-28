@@ -1,5 +1,6 @@
 package com.chesire.capi.controller
 
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -20,9 +21,9 @@ class ChallengeController {
     }
 
     @GetMapping("/{id}")
-    fun getChallenge(@PathVariable id: Long): String {
+    fun getChallenge(@PathVariable id: Long): ResponseEntity<String> {
         // TODO: Need to get a single challenge by its ID, return as a JSON object.
-        return "Challenge $id requested"
+        return ResponseEntity.notFound().build()
     }
 
     @PostMapping
@@ -32,8 +33,8 @@ class ChallengeController {
     }
 
     @DeleteMapping("/{id}")
-    fun deleteChallenge(@PathVariable id: Long): String {
+    fun deleteChallenge(@PathVariable id: Long): ResponseEntity<Void> {
         // TODO: Need to delete a challenge for a user.
-        return "Challenge $id delete requested"
+        return ResponseEntity.noContent().build()
     }
 }
