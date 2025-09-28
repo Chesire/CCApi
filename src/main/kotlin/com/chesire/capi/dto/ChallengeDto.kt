@@ -2,7 +2,7 @@ package com.chesire.capi.dto
 
 import com.chesire.capi.models.TimeFrame
 
-data class RetrieveChallengeDto(
+data class ChallengeDto(
     val id: Long,
     val name: String,
     val description: String,

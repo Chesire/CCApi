@@ -1,7 +1,7 @@
 package com.chesire.capi.controller
 
+import com.chesire.capi.dto.ChallengeDto
 import com.chesire.capi.dto.PostChallengeDto
-import com.chesire.capi.dto.RetrieveChallengeDto
 import com.chesire.capi.service.ChallengeService
 import com.chesire.capi.service.DeleteChallengeResult
 import com.chesire.capi.service.GetChallengeResult
@@ -17,35 +17,34 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/challenge")
+@RequestMapping("/api/v1/challenges")
 class ChallengeController(private val challengeService: ChallengeService) {
 
-    @GetMapping("/{userId}")
-    fun getChallenges(@PathVariable userId: Long): ResponseEntity<List<RetrieveChallengeDto>> {
+    @GetMapping("/user/{userId}")
+    fun getChallengesByUser(@PathVariable userId: Long): ResponseEntity<List<ChallengeDto>> {
         return when (val result = challengeService.getChallenges(userId)) {
             is GetChallengesResult.Success -> ResponseEntity.ok(result.challenges)
-            GetChallengesResult.UserNotFound -> ResponseEntity.notFound().build()
+            GetChallengesResult.NotFound -> ResponseEntity.noContent().build()
             GetChallengesResult.UnknownError -> ResponseEntity.internalServerError().build()
         }
     }
 
     @GetMapping("/{challengeId}")
-    fun getChallenge(@PathVariable challengeId: Long): ResponseEntity<RetrieveChallengeDto> {
+    fun getChallengeById(@PathVariable challengeId: Long): ResponseEntity<ChallengeDto> {
         return when (val result = challengeService.getChallenge(challengeId)) {
             is GetChallengeResult.Success -> ResponseEntity.ok(result.challenge)
-            GetChallengeResult.ChallengeNotFound -> ResponseEntity.notFound().build()
-            GetChallengeResult.UserNotFound -> ResponseEntity.notFound().build()
+            GetChallengeResult.NotFound -> ResponseEntity.noContent().build()
             GetChallengeResult.UnknownError -> ResponseEntity.internalServerError().build()
         }
     }
 
     @PostMapping
-    fun addChallenge(@RequestBody data: PostChallengeDto): ResponseEntity<RetrieveChallengeDto> {
-        // TODO: Need to pass the users token to validate they can add this challenge
-        return when (val result = challengeService.addChallenge(data)) {
+    fun createChallenge(@RequestBody data: PostChallengeDto): ResponseEntity<ChallengeDto> {
+        // TODO: Need to pass the users id to validate they can add this challenge
+        return when (val result = challengeService.addChallenge(data, 0L)) {
             is PostChallengeResult.Success -> ResponseEntity.ok(result.challenge)
             PostChallengeResult.InvalidData -> ResponseEntity.badRequest().build()
-            PostChallengeResult.UserNotFound -> ResponseEntity.notFound().build()
+            PostChallengeResult.NotFound -> ResponseEntity.noContent().build()
             PostChallengeResult.UnknownError -> ResponseEntity.internalServerError().build()
         }
     }
@@ -56,8 +55,7 @@ class ChallengeController(private val challengeService: ChallengeService) {
         val result = challengeService.deleteChallenge(id)
         return when (result) {
             DeleteChallengeResult.Success -> ResponseEntity.noContent().build()
-            DeleteChallengeResult.ChallengeNotFound -> ResponseEntity.notFound().build()
-            DeleteChallengeResult.UserNotFound -> ResponseEntity.notFound().build()
+            DeleteChallengeResult.NotFound -> ResponseEntity.noContent().build()
             DeleteChallengeResult.UnknownError -> ResponseEntity.internalServerError().build()
         }
     }

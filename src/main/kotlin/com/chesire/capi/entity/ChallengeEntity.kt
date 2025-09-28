@@ -2,6 +2,8 @@ package com.chesire.capi.entity
 
 import com.chesire.capi.models.TimeFrame
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -14,6 +16,7 @@ data class ChallengeEntity(
     val userId: Long,
     val name: String,
     val description: String,
+    @Enumerated(EnumType.STRING)
     val timeFrame: TimeFrame,
     val allowPauses: Boolean,
     val cheats: Int,
