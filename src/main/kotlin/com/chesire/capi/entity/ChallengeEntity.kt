@@ -1,8 +1,9 @@
-package com.chesire.capi.dto
+package com.chesire.capi.entity
 
 import com.chesire.capi.models.TimeFrame
 
-data class ChallengeDto(
+// To insert into DB
+data class ChallengeEntity(
     val id: Long,
     val name: String,
     val description: String,
