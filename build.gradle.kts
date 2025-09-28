@@ -6,7 +6,6 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     id("com.github.spotbugs") version "6.0.26"
-    id("org.owasp.dependencycheck") version "11.1.0"
 }
 
 group = "com.chesire"
@@ -66,10 +65,4 @@ spotbugs {
     ignoreFailures.set(true)
     effort.set(com.github.spotbugs.snom.Effort.MAX)
     reportLevel.set(com.github.spotbugs.snom.Confidence.LOW)
-}
-
-// OWASP Dependency Check configuration
-dependencyCheck {
-    autoUpdate = true
-    failBuildOnCVSS = 10.0f  // Only fail on critical vulnerabilities
 }

@@ -6,24 +6,24 @@ on:
 
 jobs:
   build-and-test:
-    name: Build, Test & Update Cache
+    name: Gradle | Build & Test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Git | Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Java | Setup JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Setup Gradle
+      - name: Gradle | Setup
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: false
 
-      - name: Cache Gradle dependencies
+      - name: Gradle | Cache Dependencies
         uses: actions/cache@v4
         with:
           path: |
@@ -34,10 +34,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Build and test application
+      - name: Gradle | Build and Test
         run: ./gradlew clean build --no-daemon
 
-      - name: Upload test results
+      - name: GitHub | Upload Test Results
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -45,13 +45,13 @@ jobs:
           path: build/reports/tests/test/
           retention-days: 30
 
-      - name: Upload build artifacts
+      - name: GitHub | Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: main-build-artifacts
           path: build/libs/
           retention-days: 30
 
-      - name: Update cache
+      - name: Gradle | Update Cache
         run: |
           echo "Cache updated with latest dependencies and Gradle wrapper"

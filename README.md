@@ -14,8 +14,7 @@ This project uses GitHub Actions for continuous integration and deployment:
     - **SpotBugs**: Bug pattern detection for JVM bytecode
   - Unit tests with JUnit
   - Application compilation
-  - Security scanning with OWASP Dependency Check
-- **Artifacts**: Test results, static analysis reports, security reports, and build artifacts are stored for 7 days
+- **Artifacts**: Test results, static analysis reports, and build artifacts are stored for 7 days
 
 ### Main Branch Workflow  
 - **Triggers**: On pushes to `master` branch
@@ -25,6 +24,5 @@ This project uses GitHub Actions for continuous integration and deployment:
 ### Static Analysis Tools
 - **Ktlint**: Enforces Kotlin coding conventions and style
 - **SpotBugs**: Detects potential bugs in Java/Kotlin bytecode
-- **OWASP Dependency Check**: Scans dependencies for known security vulnerabilities
 
 All workflows use Java 21 with Temurin distribution and implement Gradle dependency caching for faster builds.
