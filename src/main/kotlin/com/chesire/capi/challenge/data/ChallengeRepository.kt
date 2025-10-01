@@ -1,6 +1,5 @@
-package com.chesire.capi.repository
+package com.chesire.capi.challenge.data
 
-import com.chesire.capi.entity.ChallengeEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 

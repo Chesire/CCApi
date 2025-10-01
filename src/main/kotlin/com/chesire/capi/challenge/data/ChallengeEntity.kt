@@ -1,4 +1,4 @@
-package com.chesire.capi.entity
+package com.chesire.capi.challenge.data
 
 import com.chesire.capi.models.TimeFrame
 import jakarta.persistence.Entity

@@ -1,12 +1,12 @@
-package com.chesire.capi.controller
+package com.chesire.capi.challenge
 
-import com.chesire.capi.dto.ChallengeDto
-import com.chesire.capi.dto.PostChallengeDto
-import com.chesire.capi.service.ChallengeService
-import com.chesire.capi.service.DeleteChallengeResult
-import com.chesire.capi.service.GetChallengeResult
-import com.chesire.capi.service.GetChallengesResult
-import com.chesire.capi.service.PostChallengeResult
+import com.chesire.capi.challenge.dto.ChallengeDto
+import com.chesire.capi.challenge.dto.PostChallengeDto
+import com.chesire.capi.challenge.service.ChallengeService
+import com.chesire.capi.challenge.service.DeleteChallengeResult
+import com.chesire.capi.challenge.service.GetChallengeResult
+import com.chesire.capi.challenge.service.GetChallengesResult
+import com.chesire.capi.challenge.service.PostChallengeResult
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping

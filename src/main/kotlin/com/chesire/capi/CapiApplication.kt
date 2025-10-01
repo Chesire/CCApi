@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class CapiApplication
 
 fun main(args: Array<String>) {
-	runApplication<CapiApplication>(*args)
+    runApplication<CapiApplication>(*args)
 }

@@ -1,8 +1,9 @@
-package com.chesire.capi.dto
+package com.chesire.capi.challenge.dto
 
 import com.chesire.capi.models.TimeFrame
 
-data class PostChallengeDto(
+data class ChallengeDto(
+    val id: Long,
     val name: String,
     val description: String,
     val timeFrame: TimeFrame,

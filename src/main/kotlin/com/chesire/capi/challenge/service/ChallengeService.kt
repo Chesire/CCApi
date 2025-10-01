@@ -1,9 +1,9 @@
-package com.chesire.capi.service
+package com.chesire.capi.challenge.service
 
-import com.chesire.capi.dto.ChallengeDto
-import com.chesire.capi.dto.PostChallengeDto
-import com.chesire.capi.entity.ChallengeEntity
-import com.chesire.capi.repository.ChallengeRepository
+import com.chesire.capi.challenge.data.ChallengeEntity
+import com.chesire.capi.challenge.data.ChallengeRepository
+import com.chesire.capi.challenge.dto.ChallengeDto
+import com.chesire.capi.challenge.dto.PostChallengeDto
 import org.springframework.stereotype.Service
 
 @Service
