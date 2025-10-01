@@ -47,7 +47,6 @@ class ChallengeService(private val repository: ChallengeRepository) {
     }
 
     fun addChallenge(data: PostChallengeDto, userId: Long): PostChallengeResult {
-        // Do some validation on the data?
         return try {
             val result = repository.save(data.toEntity(userId))
             PostChallengeResult.Success(result.toRetrieveChallengeDto())
@@ -112,5 +111,3 @@ sealed interface DeleteChallengeResult {
     object NotFound : DeleteChallengeResult
     object UnknownError : DeleteChallengeResult
 }
-
-//
