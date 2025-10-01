@@ -57,8 +57,16 @@ class ChallengeService(private val repository: ChallengeRepository) {
     }
 
     fun deleteChallenge(challengeId: Long): DeleteChallengeResult {
-        // TODO: Perform delete
-        return DeleteChallengeResult.Success
+        return if (repository.existsById(challengeId)) {
+            try {
+                repository.deleteById(challengeId)
+                DeleteChallengeResult.Success
+            } catch (ex: Exception) {
+                DeleteChallengeResult.UnknownError
+            }
+        } else {
+            DeleteChallengeResult.NotFound
+        }
     }
 
     private fun PostChallengeDto.toEntity(userId: Long) = ChallengeEntity(
@@ -104,3 +112,5 @@ sealed interface DeleteChallengeResult {
     object NotFound : DeleteChallengeResult
     object UnknownError : DeleteChallengeResult
 }
+
+//
