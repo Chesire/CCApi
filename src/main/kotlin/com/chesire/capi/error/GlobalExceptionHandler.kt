@@ -3,7 +3,6 @@ package com.chesire.capi.error
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
-import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -14,8 +13,8 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationExceptions(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
-        val fieldErrors = ex.bindingResult.fieldErrors.map { fieldError ->
-            FieldError(
+        val validationErrors = ex.bindingResult.fieldErrors.map { fieldError ->
+            ValidationError(
                 field = fieldError.field,
                 rejectedValue = fieldError.rejectedValue,
                 message = fieldError.defaultMessage ?: "Invalid value"
@@ -24,7 +23,7 @@ class GlobalExceptionHandler {
         val errorResponse = ErrorResponse(
             message = "Validation failed",
             details = "One or more fields have invalid values",
-            errors = fieldErrors
+            errors = validationErrors
         )
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
     }
