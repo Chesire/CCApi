@@ -1,5 +1,6 @@
 package com.chesire.capi.error
 
+import jakarta.validation.ConstraintViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -43,6 +44,25 @@ class GlobalExceptionHandler {
             message = "Invalid parameter type",
             details = "The parameter '${ex.name}' should be of type '${ex.requiredType?.simpleName}'"
         )
+        return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
+    }
+
+    @ExceptionHandler(ConstraintViolationException::class)
+    fun handleConstraintViolationException(ex: ConstraintViolationException): ResponseEntity<ErrorResponse> {
+        val validationErrors = ex.constraintViolations.map { violation ->
+            ValidationError(
+                field = violation.propertyPath.toString(),
+                rejectedValue = violation.invalidValue,
+                message = violation.message
+            )
+        }
+
+        val errorResponse = ErrorResponse(
+            message = "Invalid request parameters",
+            details = "One or more path parameters or request parameters are invalid",
+            errors = validationErrors
+        )
+
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
     }
 
