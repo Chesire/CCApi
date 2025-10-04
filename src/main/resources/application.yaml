@@ -3,3 +3,8 @@ spring:
     name: capi
   profiles:
     active: dev
+
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
