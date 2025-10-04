@@ -7,6 +7,7 @@ import com.chesire.capi.challenge.service.DeleteChallengeResult
 import com.chesire.capi.challenge.service.GetChallengeResult
 import com.chesire.capi.challenge.service.GetChallengesResult
 import com.chesire.capi.challenge.service.PostChallengeResult
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -39,7 +40,7 @@ class ChallengeController(private val challengeService: ChallengeService) {
     }
 
     @PostMapping
-    fun createChallenge(@RequestBody data: PostChallengeDto): ResponseEntity<ChallengeDto> {
+    fun createChallenge(@Valid @RequestBody data: PostChallengeDto): ResponseEntity<ChallengeDto> {
         // TODO: Need to pass the users id to validate they can add this challenge
         return when (val result = challengeService.addChallenge(data, 0L)) {
             is PostChallengeResult.Success -> ResponseEntity.ok(result.challenge)
