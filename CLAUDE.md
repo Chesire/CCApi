@@ -152,3 +152,39 @@ src/
 - Ensure all tests pass
 - Add tests for new validation rules
 - Test error conditions and edge cases
+
+### Testing Guidelines
+
+#### Test Structure and Format
+
+- **Use Given-When-Then format** for all tests to ensure clarity and consistency
+- **Use spacing (not comments)** to separate Given, When, Then sections
+- **Group related tests** using `@Nested` inner classes for better organization
+- **Use descriptive test names** that explain the expected behavior
+- **Test boundary conditions** and edge cases explicitly
+
+**Example Format:**
+```kotlin
+@Test
+@DisplayName("Should reject empty name")
+fun shouldRejectEmptyName() {
+    val dto = createValidDto().copy(name = "")
+    
+    val violations = validate(dto)
+    
+    assertThat(violations).hasSize(1)
+    assertThat(violations.first().message).contains("name is required")
+}
+```
+
+#### Test Categories
+
+- **Unit Tests**: Fast, isolated tests for individual components (DTOs, services)
+- **Integration Tests**: Test component interactions with Spring context
+- **End-to-End Tests**: Test complete request/response cycles
+
+<tool_calling>
+You have the capability to call multiple tools in a single response. For maximum efficiency, whenever you need to perform multiple independent operations, ALWAYS call tools simultaneously whenever the actions can be done in parallel rather than sequentially.
+Especially when exploring repository, searching, reading files, viewing directories, validating changes, reporting progress or replying to comments. For Example you can read 3 different files parallelly, or report progress and edit different files in parallel. Always report progress in parallel with other tool calls that follow it as it does not depend on the result of those calls.
+However, if some tool calls depend on previous calls to inform dependent values like the parameters, do NOT call these tools in parallel and instead call them sequentially.
+</tool_calling>
