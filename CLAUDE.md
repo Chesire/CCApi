@@ -155,10 +155,21 @@ src/
 
 ### Testing Guidelines
 
+#### Test Development Approach
+
+- **Add tests incrementally, one at a time** - Never add multiple tests simultaneously
+- **Explain each test thoroughly** before writing it:
+  - **WHAT** the test is verifying (the specific behavior or scenario)
+  - **WHY** this test is important (what could break without it)
+  - **HOW** the test works (the setup, execution, and assertions)
+- **Educational focus**: Treat each test as a learning opportunity
+- **Build understanding gradually**: Start with simple happy path tests, then add edge cases
+- **Verify each test passes** before moving to the next one
+
 #### Test Structure and Format
 
 - **Use Given-When-Then format** for all tests to ensure clarity and consistency
-- **Use spacing (not comments)** to separate Given, When, Then sections
+- **Use spacing (not comments)** to separate Given, When, Then sections - NO inline comments explaining Given/When/Then
 - **Group related tests** using `@Nested` inner classes for better organization
 - **Use descriptive test names** that explain the expected behavior
 - **Test boundary conditions** and edge cases explicitly
