@@ -23,10 +23,9 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/challenges")
 class ChallengeController(private val challengeService: ChallengeService) {
-
     @GetMapping("/user/{userId}")
     fun getChallengesByUser(
-        @PathVariable @Positive(message = "User ID must be positive") userId: Long
+        @PathVariable @Positive(message = "User ID must be positive") userId: Long,
     ): ResponseEntity<List<ChallengeDto>> {
         return when (val result = challengeService.getChallenges(userId)) {
             is GetChallengesResult.Success -> ResponseEntity.ok(result.challenges)
@@ -37,7 +36,7 @@ class ChallengeController(private val challengeService: ChallengeService) {
 
     @GetMapping("/{challengeId}")
     fun getChallengeById(
-        @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long
+        @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long,
     ): ResponseEntity<ChallengeDto> {
         return when (val result = challengeService.getChallenge(challengeId)) {
             is GetChallengeResult.Success -> ResponseEntity.ok(result.challenge)
@@ -47,7 +46,9 @@ class ChallengeController(private val challengeService: ChallengeService) {
     }
 
     @PostMapping
-    fun createChallenge(@Valid @RequestBody data: PostChallengeDto): ResponseEntity<ChallengeDto> {
+    fun createChallenge(
+        @Valid @RequestBody data: PostChallengeDto,
+    ): ResponseEntity<ChallengeDto> {
         // TODO: Need to pass the users id to validate they can add this challenge
         return when (val result = challengeService.addChallenge(data, 0L)) {
             is PostChallengeResult.Success -> ResponseEntity.ok(result.challenge)
@@ -59,7 +60,7 @@ class ChallengeController(private val challengeService: ChallengeService) {
 
     @DeleteMapping("/{challengeId}")
     fun deleteChallenge(
-        @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long
+        @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long,
     ): ResponseEntity<Void> {
         // TODO: Need to pass the users token to validate they can delete this challenge
         val result = challengeService.deleteChallenge(challengeId)

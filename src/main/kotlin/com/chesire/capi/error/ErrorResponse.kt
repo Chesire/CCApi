@@ -8,11 +8,11 @@ class ErrorResponse(
     val details: String? = null,
     val errors: List<ValidationError>? = null,
     @field:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    val timestamp: LocalDateTime = LocalDateTime.now()
+    val timestamp: LocalDateTime = LocalDateTime.now(),
 )
 
 data class ValidationError(
     val field: String,
     val rejectedValue: Any?,
-    val message: String
+    val message: String,
 )

@@ -9,7 +9,6 @@ import java.time.LocalDateTime
 
 @Service
 class EventService(private val repository: EventRepository) {
-
     fun createEvent(data: PostEventDto): CreateEventResult {
         return try {
             val result = repository.save(data.toEntity())
@@ -21,7 +20,7 @@ class EventService(private val repository: EventRepository) {
 
     fun getEventsByKey(key: String): GetEventsResult {
         return try {
-            val result = repository.findByKey(key)
+            val result = repository.findByEventKey(key)
             GetEventsResult.Success(result.map { it.toDto() })
         } catch (ex: Exception) {
             GetEventsResult.UnknownError
@@ -30,28 +29,30 @@ class EventService(private val repository: EventRepository) {
 
     private fun PostEventDto.toEntity(): EventEntity {
         return EventEntity(
-            key = key,
-            value = value,
-            userId = userId
+            eventKey = key,
+            eventValue = value,
+            userId = userId,
         )
     }
 
     private fun EventEntity.toDto(): EventDto {
         return EventDto(
-            key = key,
-            value = value,
+            key = eventKey,
+            value = eventValue,
             userId = userId,
-            timestamp = createdAt ?: LocalDateTime.now() // just fallback to now for now
+            timestamp = createdAt ?: LocalDateTime.now(),
         )
     }
 }
 
 sealed interface CreateEventResult {
     data class Success(val event: EventDto) : CreateEventResult
+
     object UnknownError : CreateEventResult
 }
 
 sealed interface GetEventsResult {
     data class Success(val events: List<EventDto>) : GetEventsResult
+
     object UnknownError : GetEventsResult
 }

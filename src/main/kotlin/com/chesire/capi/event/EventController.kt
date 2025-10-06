@@ -20,9 +20,10 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/events")
 class EventController(private val eventService: EventService) {
-
     @PostMapping
-    fun createEvent(@Valid @RequestBody data: PostEventDto): ResponseEntity<EventDto> {
+    fun createEvent(
+        @Valid @RequestBody data: PostEventDto,
+    ): ResponseEntity<EventDto> {
         return when (val result = eventService.createEvent(data)) {
             is CreateEventResult.Success -> ResponseEntity.ok(result.event)
             CreateEventResult.UnknownError -> ResponseEntity.internalServerError().build()
@@ -31,7 +32,7 @@ class EventController(private val eventService: EventService) {
 
     @GetMapping("/{key}")
     fun getEventsByKey(
-        @PathVariable @Size(min = 1, max = 30, message = "Key must be between 1 and 30 characters") key: String
+        @PathVariable @Size(min = 1, max = 30, message = "Key must be between 1 and 30 characters") key: String,
     ): ResponseEntity<List<EventDto>> {
         // Add pagination at some point
         // Maybe add a from timeframe as well?

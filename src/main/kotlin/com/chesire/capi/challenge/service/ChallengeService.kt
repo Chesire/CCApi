@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service
 
 @Service
 class ChallengeService(private val repository: ChallengeRepository) {
-
     fun getChallenges(userId: Long): GetChallengesResult {
         val allForUser = repository.findByUserId(userId)
         return try {
@@ -25,7 +24,7 @@ class ChallengeService(private val repository: ChallengeRepository) {
                             allowPauses = it.allowPauses,
                             cheats = it.cheats,
                         )
-                    }
+                    },
                 )
             }
         } catch (ex: Exception) {
@@ -46,7 +45,10 @@ class ChallengeService(private val repository: ChallengeRepository) {
         }
     }
 
-    fun addChallenge(data: PostChallengeDto, userId: Long): PostChallengeResult {
+    fun addChallenge(
+        data: PostChallengeDto,
+        userId: Long,
+    ): PostChallengeResult {
         return try {
             val result = repository.save(data.toEntity(userId))
             PostChallengeResult.Success(result.toRetrieveChallengeDto())
@@ -68,46 +70,57 @@ class ChallengeService(private val repository: ChallengeRepository) {
         }
     }
 
-    private fun PostChallengeDto.toEntity(userId: Long) = ChallengeEntity(
-        userId = userId,
-        name = name,
-        description = description,
-        timeFrame = timeFrame,
-        allowPauses = allowPauses,
-        cheats = cheats,
-    )
+    private fun PostChallengeDto.toEntity(userId: Long) =
+        ChallengeEntity(
+            userId = userId,
+            name = name,
+            description = description,
+            timeFrame = timeFrame,
+            allowPauses = allowPauses,
+            cheats = cheats,
+        )
 
-    private fun ChallengeEntity.toRetrieveChallengeDto() = ChallengeDto(
-        id = id,
-        name = name,
-        description = description,
-        timeFrame = timeFrame,
-        allowPauses = allowPauses,
-        cheats = cheats,
-    )
+    private fun ChallengeEntity.toRetrieveChallengeDto() =
+        ChallengeDto(
+            id = id,
+            name = name,
+            description = description,
+            timeFrame = timeFrame,
+            allowPauses = allowPauses,
+            cheats = cheats,
+        )
 }
 
 sealed interface GetChallengesResult {
     data class Success(val challenges: List<ChallengeDto>) : GetChallengesResult
+
     object NotFound : GetChallengesResult
+
     object UnknownError : GetChallengesResult
 }
 
 sealed interface GetChallengeResult {
     data class Success(val challenge: ChallengeDto) : GetChallengeResult
+
     object NotFound : GetChallengeResult
+
     object UnknownError : GetChallengeResult
 }
 
 sealed interface PostChallengeResult {
     data class Success(val challenge: ChallengeDto) : PostChallengeResult
+
     object InvalidData : PostChallengeResult
+
     object NotFound : PostChallengeResult
+
     object UnknownError : PostChallengeResult
 }
 
 sealed interface DeleteChallengeResult {
     object Success : DeleteChallengeResult
+
     object NotFound : DeleteChallengeResult
+
     object UnknownError : DeleteChallengeResult
 }

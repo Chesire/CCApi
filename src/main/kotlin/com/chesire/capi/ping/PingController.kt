@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/ping")
 class PingController {
-
     @GetMapping
     fun getPing() = "Pong"
 }

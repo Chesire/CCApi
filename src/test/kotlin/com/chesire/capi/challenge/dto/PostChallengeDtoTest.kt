@@ -14,7 +14,6 @@ import kotlin.test.assertTrue
 
 @DisplayName("PostChallengeDto Validation Tests")
 class PostChallengeDtoTest {
-
     private lateinit var validator: Validator
 
     @BeforeEach
@@ -22,8 +21,7 @@ class PostChallengeDtoTest {
         validator = Validation.buildDefaultValidatorFactory().validator
     }
 
-    private fun PostChallengeDto.validate(): Set<ConstraintViolation<PostChallengeDto>> =
-        validator.validate(this)
+    private fun PostChallengeDto.validate(): Set<ConstraintViolation<PostChallengeDto>> = validator.validate(this)
 
     private fun Set<ConstraintViolation<PostChallengeDto>>.hasMessageContaining(message: String): Boolean =
         any { it.message.contains(message, ignoreCase = true) }
@@ -31,7 +29,6 @@ class PostChallengeDtoTest {
     @Nested
     @DisplayName("Valid Data Tests")
     inner class ValidDataTests {
-
         @Test
         @DisplayName("Should pass validation with all valid fields")
         fun shouldPassValidationWithValidData() {
@@ -45,10 +42,11 @@ class PostChallengeDtoTest {
         @Test
         @DisplayName("Should pass validation with minimum valid lengths")
         fun shouldPassValidationWithMinimumLengths() {
-            val dto = validDto().copy(
-                name = "ABC",
-                description = "X"
-            )
+            val dto =
+                validDto().copy(
+                    name = "ABC",
+                    description = "X",
+                )
 
             val violations = dto.validate()
 
@@ -58,10 +56,11 @@ class PostChallengeDtoTest {
         @Test
         @DisplayName("Should pass validation with maximum valid lengths")
         fun shouldPassValidationWithMaximumLengths() {
-            val dto = validDto().copy(
-                name = "A".repeat(20),
-                description = "B".repeat(200)
-            )
+            val dto =
+                validDto().copy(
+                    name = "A".repeat(20),
+                    description = "B".repeat(200),
+                )
 
             val violations = dto.validate()
 
@@ -92,7 +91,6 @@ class PostChallengeDtoTest {
     @Nested
     @DisplayName("Name Validation Tests")
     inner class NameValidationTests {
-
         @Test
         @DisplayName("Should reject empty name")
         fun shouldRejectEmptyName() {
@@ -134,7 +132,6 @@ class PostChallengeDtoTest {
     @Nested
     @DisplayName("Description Validation Tests")
     inner class DescriptionValidationTests {
-
         @Test
         @DisplayName("Should reject empty description")
         fun shouldRejectEmptyDescription() {
@@ -173,9 +170,10 @@ class PostChallengeDtoTest {
         @Test
         @DisplayName("Should accept description with mixed content including spaces")
         fun shouldAcceptDescriptionWithMixedContent() {
-            val dto = validDto().copy(
-                description = "This is a valid description with spaces, punctuation! And numbers 123."
-            )
+            val dto =
+                validDto().copy(
+                    description = "This is a valid description with spaces, punctuation! And numbers 123.",
+                )
 
             val violations = dto.validate()
 
@@ -186,7 +184,6 @@ class PostChallengeDtoTest {
     @Nested
     @DisplayName("Cheats Validation Tests")
     inner class CheatsValidationTests {
-
         @Test
         @DisplayName("Should reject negative cheats")
         fun shouldRejectNegativeCheats() {
@@ -220,7 +217,7 @@ class PostChallengeDtoTest {
                 assertFalse(violations.isEmpty(), "Expected violations for $description")
                 assertTrue(
                     violations.hasMessageContaining("negative") || violations.hasMessageContaining("exceed"),
-                    "Expected cheat-related validation message for $description"
+                    "Expected cheat-related validation message for $description",
                 )
             }
         }
@@ -229,7 +226,6 @@ class PostChallengeDtoTest {
     @Nested
     @DisplayName("TimeFrame Validation Tests")
     inner class TimeFrameValidationTests {
-
         @Test
         @DisplayName("Should accept all valid TimeFrame values")
         fun shouldAcceptAllValidTimeFrameValues() {
@@ -246,17 +242,17 @@ class PostChallengeDtoTest {
     @Nested
     @DisplayName("Multiple Field Validation Tests")
     inner class MultipleFieldValidationTests {
-
         @Test
         @DisplayName("Should report all validation errors when multiple fields are invalid")
         fun shouldReportAllValidationErrors() {
-            val dto = PostChallengeDto(
-                name = "",
-                description = "",
-                timeFrame = TimeFrame.DAILY,
-                allowPauses = true,
-                cheats = -5
-            )
+            val dto =
+                PostChallengeDto(
+                    name = "",
+                    description = "",
+                    timeFrame = TimeFrame.DAILY,
+                    allowPauses = true,
+                    cheats = -5,
+                )
 
             val violations = dto.validate()
 
@@ -271,13 +267,14 @@ class PostChallengeDtoTest {
         @Test
         @DisplayName("Should handle maximum violations across all fields")
         fun shouldHandleMaximumViolationsAcrossAllFields() {
-            val dto = PostChallengeDto(
-                name = "X".repeat(50),
-                description = "Y".repeat(300),
-                timeFrame = TimeFrame.WEEKLY,
-                allowPauses = false,
-                cheats = 15
-            )
+            val dto =
+                PostChallengeDto(
+                    name = "X".repeat(50),
+                    description = "Y".repeat(300),
+                    timeFrame = TimeFrame.WEEKLY,
+                    allowPauses = false,
+                    cheats = 15,
+                )
 
             val violations = dto.validate()
 
@@ -291,17 +288,17 @@ class PostChallengeDtoTest {
     @Nested
     @DisplayName("Special Characters and Content Tests")
     inner class SpecialCharactersTests {
-
         @Test
         @DisplayName("Should accept names with special characters")
         fun shouldAcceptNamesWithSpecialCharacters() {
-            val specialNames = listOf(
-                "Test-123",
-                "Challenge_2",
-                "My Test!",
-                "Test & Go",
-                "Challenge#1"
-            )
+            val specialNames =
+                listOf(
+                    "Test-123",
+                    "Challenge_2",
+                    "My Test!",
+                    "Test & Go",
+                    "Challenge#1",
+                )
 
             specialNames.forEach { specialName ->
                 val dto = validDto().copy(name = specialName)
@@ -315,12 +312,13 @@ class PostChallengeDtoTest {
         @Test
         @DisplayName("Should accept descriptions with various content types")
         fun shouldAcceptDescriptionsWithVariousContent() {
-            val complexDescriptions = listOf(
-                "Challenge with numbers: 123, 456!",
-                "Challenge with symbols: @#\$%^&*()",
-                "Challenge with quotes: 'single' and \"double\"",
-                "Challenge with accents: café, naïve, résumé"
-            )
+            val complexDescriptions =
+                listOf(
+                    "Challenge with numbers: 123, 456!",
+                    "Challenge with symbols: @#\$%^&*()",
+                    "Challenge with quotes: 'single' and \"double\"",
+                    "Challenge with accents: café, naïve, résumé",
+                )
 
             complexDescriptions.forEach { description ->
                 val dto = validDto().copy(description = description)
@@ -335,16 +333,16 @@ class PostChallengeDtoTest {
     @Nested
     @DisplayName("Exact Boundary Tests")
     inner class ExactBoundaryTests {
-
         @Test
         @DisplayName("Should test exact name length boundaries")
         fun shouldTestExactNameLengthBoundaries() {
-            val boundaryTests = mapOf(
-                2 to false,
-                3 to true,
-                20 to true,
-                21 to false
-            )
+            val boundaryTests =
+                mapOf(
+                    2 to false,
+                    3 to true,
+                    20 to true,
+                    21 to false,
+                )
 
             boundaryTests.forEach { (length, shouldBeValid) ->
                 val dto = validDto().copy(name = "A".repeat(length))
@@ -363,12 +361,13 @@ class PostChallengeDtoTest {
         @Test
         @DisplayName("Should test exact cheat value boundaries")
         fun shouldTestExactCheatValueBoundaries() {
-            val boundaryTests = mapOf(
-                -1 to false,
-                0 to true,
-                4 to true,
-                5 to false
-            )
+            val boundaryTests =
+                mapOf(
+                    -1 to false,
+                    0 to true,
+                    4 to true,
+                    5 to false,
+                )
 
             boundaryTests.forEach { (cheats, shouldBeValid) ->
                 val dto = validDto().copy(cheats = cheats)
@@ -387,7 +386,6 @@ class PostChallengeDtoTest {
     @Nested
     @DisplayName("Data Class Functionality Tests")
     inner class DataClassFunctionalityTests {
-
         @Test
         @DisplayName("Should support copy with field changes")
         fun shouldSupportCopyWithFieldChanges() {
@@ -425,27 +423,30 @@ class PostChallengeDtoTest {
     }
 
     companion object {
-        fun validDto() = PostChallengeDto(
-            name = "Valid Challenge",
-            description = "This is a valid description",
-            timeFrame = TimeFrame.DAILY,
-            allowPauses = true,
-            cheats = 2
-        )
+        fun validDto() =
+            PostChallengeDto(
+                name = "Valid Challenge",
+                description = "This is a valid description",
+                timeFrame = TimeFrame.DAILY,
+                allowPauses = true,
+                cheats = 2,
+            )
 
-        val invalidNames = listOf(
-            "" to "empty string",
-            "AB" to "too short",
-            "A".repeat(21) to "too long",
-            "   " to "whitespace only",
-            "\t\n" to "tabs and newlines"
-        )
+        val invalidNames =
+            listOf(
+                "" to "empty string",
+                "AB" to "too short",
+                "A".repeat(21) to "too long",
+                "   " to "whitespace only",
+                "\t\n" to "tabs and newlines",
+            )
 
-        val invalidCheats = listOf(
-            -10 to "large negative",
-            -1 to "small negative",
-            5 to "exceeds maximum",
-            100 to "way too large"
-        )
+        val invalidCheats =
+            listOf(
+                -10 to "large negative",
+                -1 to "small negative",
+                5 to "exceeds maximum",
+                100 to "way too large",
+            )
     }
 }

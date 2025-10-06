@@ -6,5 +6,5 @@ data class EventDto(
     val key: String,
     val value: String,
     val userId: Long,
-    val timestamp: LocalDateTime
+    val timestamp: LocalDateTime,
 )

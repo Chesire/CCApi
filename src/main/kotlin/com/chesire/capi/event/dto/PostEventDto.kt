@@ -16,5 +16,5 @@ data class PostEventDto(
      * User this event is associated with.
      */
     @field:Positive
-    val userId: Long
+    val userId: Long,
 )

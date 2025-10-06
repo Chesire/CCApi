@@ -15,6 +15,7 @@ import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -22,12 +23,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.http.MediaType
 
 @WebMvcTest(ChallengeController::class)
 @DisplayName("ChallengeController Tests")
 class ChallengeControllerTest {
-
     @Autowired
     private lateinit var mockMvc: MockMvc
 
@@ -39,16 +38,16 @@ class ChallengeControllerTest {
 
     private fun createValidPostChallengeDto(
         name: String = "Test Challenge",
-        description: String = "A test challenge description", 
+        description: String = "A test challenge description",
         timeFrame: TimeFrame = TimeFrame.DAILY,
         allowPauses: Boolean = true,
-        cheats: Int = 2
+        cheats: Int = 2,
     ) = PostChallengeDto(
         name = name,
         description = description,
         timeFrame = timeFrame,
         allowPauses = allowPauses,
-        cheats = cheats
+        cheats = cheats,
     )
 
     private fun createValidChallengeDto(
@@ -57,14 +56,14 @@ class ChallengeControllerTest {
         description: String = "A test challenge description",
         timeFrame: TimeFrame = TimeFrame.DAILY,
         allowPauses: Boolean = true,
-        cheats: Int = 2
+        cheats: Int = 2,
     ) = ChallengeDto(
         id = id,
         name = name,
         description = description,
         timeFrame = timeFrame,
         allowPauses = allowPauses,
-        cheats = cheats
+        cheats = cheats,
     )
 
     @Test
@@ -130,10 +129,11 @@ class ChallengeControllerTest {
     @DisplayName("Should return list of challenges for valid user")
     fun shouldReturnListOfChallengesForValidUser() {
         val userId = 1L
-        val challenges = listOf(
-            createValidChallengeDto(id = 1L, name = "Challenge 1"),
-            createValidChallengeDto(id = 2L, name = "Challenge 2", timeFrame = TimeFrame.WEEKLY, allowPauses = false, cheats = 0)
-        )
+        val challenges =
+            listOf(
+                createValidChallengeDto(id = 1L, name = "Challenge 1"),
+                createValidChallengeDto(id = 2L, name = "Challenge 2", timeFrame = TimeFrame.WEEKLY, allowPauses = false, cheats = 0),
+            )
 
         `when`(challengeService.getChallenges(userId))
             .thenReturn(GetChallengesResult.Success(challenges))
@@ -202,7 +202,7 @@ class ChallengeControllerTest {
         mockMvc.perform(
             post("/api/v1/challenges")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postDto))
+                .content(objectMapper.writeValueAsString(postDto)),
         )
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
@@ -225,7 +225,7 @@ class ChallengeControllerTest {
         mockMvc.perform(
             post("/api/v1/challenges")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postDto))
+                .content(objectMapper.writeValueAsString(postDto)),
         )
             .andExpect(status().isBadRequest())
     }
@@ -241,7 +241,7 @@ class ChallengeControllerTest {
         mockMvc.perform(
             post("/api/v1/challenges")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postDto))
+                .content(objectMapper.writeValueAsString(postDto)),
         )
             .andExpect(status().isNoContent())
     }
@@ -257,7 +257,7 @@ class ChallengeControllerTest {
         mockMvc.perform(
             post("/api/v1/challenges")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postDto))
+                .content(objectMapper.writeValueAsString(postDto)),
         )
             .andExpect(status().isInternalServerError())
     }
@@ -287,7 +287,7 @@ class ChallengeControllerTest {
     }
 
     @Test
-    @DisplayName("Should return internal server error on unknown error for delete challenge")  
+    @DisplayName("Should return internal server error on unknown error for delete challenge")
     fun shouldReturnInternalServerErrorOnUnknownErrorForDeleteChallenge() {
         val challengeId = 1L
 
@@ -306,7 +306,7 @@ class ChallengeControllerTest {
     }
 
     @Test
-    @DisplayName("Should return bad request for zero challenge ID on delete")  
+    @DisplayName("Should return bad request for zero challenge ID on delete")
     fun shouldReturnBadRequestForZeroChallengeIdOnDelete() {
         mockMvc.perform(delete("/api/v1/challenges/{challengeId}", 0L))
             .andExpect(status().isBadRequest())

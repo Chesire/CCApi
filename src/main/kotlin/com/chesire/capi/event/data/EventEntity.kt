@@ -12,8 +12,8 @@ data class EventEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-    val key: String,
-    val value: String,
+    val eventKey: String,
+    val eventValue: String,
     val userId: Long,
     @CreationTimestamp
     val createdAt: LocalDateTime? = null,

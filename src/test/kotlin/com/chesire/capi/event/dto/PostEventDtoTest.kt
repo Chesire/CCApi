@@ -13,7 +13,6 @@ import kotlin.test.assertTrue
 
 @DisplayName("PostEventDto Validation Tests")
 class PostEventDtoTest {
-
     private lateinit var validator: Validator
 
     @BeforeEach
@@ -21,8 +20,7 @@ class PostEventDtoTest {
         validator = Validation.buildDefaultValidatorFactory().validator
     }
 
-    private fun PostEventDto.validate(): Set<ConstraintViolation<PostEventDto>> =
-        validator.validate(this)
+    private fun PostEventDto.validate(): Set<ConstraintViolation<PostEventDto>> = validator.validate(this)
 
     private fun Set<ConstraintViolation<PostEventDto>>.hasMessageContaining(message: String): Boolean =
         any { it.message.contains(message, ignoreCase = true) }
@@ -30,7 +28,6 @@ class PostEventDtoTest {
     @Nested
     @DisplayName("Valid Data Tests")
     inner class ValidDataTests {
-
         @Test
         @DisplayName("Should pass validation with all valid fields")
         fun shouldPassValidationWithValidData() {
@@ -44,10 +41,11 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should pass validation with minimum valid lengths")
         fun shouldPassValidationWithMinimumLengths() {
-            val dto = validDto().copy(
-                key = "A",
-                value = "X"
-            )
+            val dto =
+                validDto().copy(
+                    key = "A",
+                    value = "X",
+                )
 
             val violations = dto.validate()
 
@@ -57,10 +55,11 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should pass validation with maximum valid lengths")
         fun shouldPassValidationWithMaximumLengths() {
-            val dto = validDto().copy(
-                key = "A".repeat(30),
-                value = "B".repeat(200)
-            )
+            val dto =
+                validDto().copy(
+                    key = "A".repeat(30),
+                    value = "B".repeat(200),
+                )
 
             val violations = dto.validate()
 
@@ -81,7 +80,6 @@ class PostEventDtoTest {
     @Nested
     @DisplayName("Key Validation Tests")
     inner class KeyValidationTests {
-
         @Test
         @DisplayName("Should reject empty key")
         fun shouldRejectEmptyKey() {
@@ -134,7 +132,6 @@ class PostEventDtoTest {
     @Nested
     @DisplayName("Value Validation Tests")
     inner class ValueValidationTests {
-
         @Test
         @DisplayName("Should reject empty value")
         fun shouldRejectEmptyValue() {
@@ -173,9 +170,10 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should accept value with mixed content including spaces")
         fun shouldAcceptValueWithMixedContent() {
-            val dto = validDto().copy(
-                value = "This is a valid value with spaces, punctuation! And numbers 123."
-            )
+            val dto =
+                validDto().copy(
+                    value = "This is a valid value with spaces, punctuation! And numbers 123.",
+                )
 
             val violations = dto.validate()
 
@@ -186,7 +184,6 @@ class PostEventDtoTest {
     @Nested
     @DisplayName("UserId Validation Tests")
     inner class UserIdValidationTests {
-
         @Test
         @DisplayName("Should reject zero userId")
         fun shouldRejectZeroUserId() {
@@ -222,7 +219,7 @@ class PostEventDtoTest {
                 assertFalse(violations.isEmpty(), "Expected violations for $description")
                 assertTrue(
                     violations.any { it.message.contains("greater than 0") || it.message.contains("positive") },
-                    "Expected positive validation message for $description. Got: ${violations.map { it.message }}"
+                    "Expected positive validation message for $description. Got: ${violations.map { it.message }}",
                 )
             }
         }
@@ -241,15 +238,15 @@ class PostEventDtoTest {
     @Nested
     @DisplayName("Multiple Field Validation Tests")
     inner class MultipleFieldValidationTests {
-
         @Test
         @DisplayName("Should report all validation errors when multiple fields are invalid")
         fun shouldReportAllValidationErrors() {
-            val dto = PostEventDto(
-                key = "",
-                value = "",
-                userId = 0L
-            )
+            val dto =
+                PostEventDto(
+                    key = "",
+                    value = "",
+                    userId = 0L,
+                )
 
             val violations = dto.validate()
 
@@ -264,11 +261,12 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should handle maximum violations across all fields")
         fun shouldHandleMaximumViolationsAcrossAllFields() {
-            val dto = PostEventDto(
-                key = "X".repeat(50),
-                value = "Y".repeat(300),
-                userId = -100L
-            )
+            val dto =
+                PostEventDto(
+                    key = "X".repeat(50),
+                    value = "Y".repeat(300),
+                    userId = -100L,
+                )
 
             val violations = dto.validate()
 
@@ -282,17 +280,17 @@ class PostEventDtoTest {
     @Nested
     @DisplayName("Special Characters and Content Tests")
     inner class SpecialCharactersTests {
-
         @Test
         @DisplayName("Should accept keys with special characters")
         fun shouldAcceptKeysWithSpecialCharacters() {
-            val specialKeys = listOf(
-                "challenge_failed",
-                "event-type-123",
-                "user_action!",
-                "test&go",
-                "action#1"
-            )
+            val specialKeys =
+                listOf(
+                    "challenge_failed",
+                    "event-type-123",
+                    "user_action!",
+                    "test&go",
+                    "action#1",
+                )
 
             specialKeys.forEach { specialKey ->
                 val dto = validDto().copy(key = specialKey)
@@ -306,13 +304,14 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should accept values with various content types")
         fun shouldAcceptValuesWithVariousContent() {
-            val complexValues = listOf(
-                "Value with numbers: 123, 456!",
-                "Value with symbols: @#\$%^&*()",
-                "Value with quotes: 'single' and \"double\"",
-                "Value with accents: café, naïve, résumé",
-                "JSON-like: {\"type\":\"challenge\",\"id\":123}"
-            )
+            val complexValues =
+                listOf(
+                    "Value with numbers: 123, 456!",
+                    "Value with symbols: @#\$%^&*()",
+                    "Value with quotes: 'single' and \"double\"",
+                    "Value with accents: café, naïve, résumé",
+                    "JSON-like: {\"type\":\"challenge\",\"id\":123}",
+                )
 
             complexValues.forEach { value ->
                 val dto = validDto().copy(value = value)
@@ -327,16 +326,16 @@ class PostEventDtoTest {
     @Nested
     @DisplayName("Exact Boundary Tests")
     inner class ExactBoundaryTests {
-
         @Test
         @DisplayName("Should test exact key length boundaries")
         fun shouldTestExactKeyLengthBoundaries() {
-            val boundaryTests = mapOf(
-                0 to false,
-                1 to true,
-                30 to true,
-                31 to false
-            )
+            val boundaryTests =
+                mapOf(
+                    0 to false,
+                    1 to true,
+                    30 to true,
+                    31 to false,
+                )
 
             boundaryTests.forEach { (length, shouldBeValid) ->
                 val dto = validDto().copy(key = "A".repeat(length))
@@ -359,12 +358,13 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should test exact value length boundaries")
         fun shouldTestExactValueLengthBoundaries() {
-            val boundaryTests = mapOf(
-                0 to false,
-                1 to true,
-                200 to true,
-                201 to false
-            )
+            val boundaryTests =
+                mapOf(
+                    0 to false,
+                    1 to true,
+                    200 to true,
+                    201 to false,
+                )
 
             boundaryTests.forEach { (length, shouldBeValid) ->
                 val dto = validDto().copy(value = "B".repeat(length))
@@ -387,12 +387,13 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should test exact userId boundaries")
         fun shouldTestExactUserIdBoundaries() {
-            val boundaryTests = mapOf(
-                -1L to false,
-                0L to false,
-                1L to true,
-                Long.MAX_VALUE to true
-            )
+            val boundaryTests =
+                mapOf(
+                    -1L to false,
+                    0L to false,
+                    1L to true,
+                    Long.MAX_VALUE to true,
+                )
 
             boundaryTests.forEach { (userId, shouldBeValid) ->
                 val dto = validDto().copy(userId = userId)
@@ -412,7 +413,6 @@ class PostEventDtoTest {
     @Nested
     @DisplayName("Data Class Functionality Tests")
     inner class DataClassFunctionalityTests {
-
         @Test
         @DisplayName("Should support copy with field changes")
         fun shouldSupportCopyWithFieldChanges() {
@@ -451,23 +451,26 @@ class PostEventDtoTest {
     }
 
     companion object {
-        fun validDto() = PostEventDto(
-            key = "challenge_completed",
-            value = "gym_challenge",
-            userId = 123L
-        )
+        fun validDto() =
+            PostEventDto(
+                key = "challenge_completed",
+                value = "gym_challenge",
+                userId = 123L,
+            )
 
-        val invalidKeys = listOf(
-            "" to "empty string",
-            "A".repeat(31) to "too long",
-            "   " to "whitespace only",
-            "\t\n" to "tabs and newlines"
-        )
+        val invalidKeys =
+            listOf(
+                "" to "empty string",
+                "A".repeat(31) to "too long",
+                "   " to "whitespace only",
+                "\t\n" to "tabs and newlines",
+            )
 
-        val invalidUserIds = listOf(
-            -100L to "large negative",
-            -1L to "small negative",
-            0L to "zero value"
-        )
+        val invalidUserIds =
+            listOf(
+                -100L to "large negative",
+                -1L to "small negative",
+                0L to "zero value",
+            )
     }
 }

@@ -24,7 +24,6 @@ import java.time.LocalDateTime
 @WebMvcTest(EventController::class)
 @DisplayName("EventController Tests")
 class EventControllerTest {
-
     @Autowired
     private lateinit var mockMvc: MockMvc
 
@@ -37,23 +36,23 @@ class EventControllerTest {
     private fun createValidPostEventDto(
         key: String = "challenge_completed",
         value: String = "gym_challenge",
-        userId: Long = 123L
+        userId: Long = 123L,
     ) = PostEventDto(
         key = key,
         value = value,
-        userId = userId
+        userId = userId,
     )
 
     private fun createValidEventDto(
         key: String = "challenge_completed",
         value: String = "gym_challenge",
         userId: Long = 123L,
-        timestamp: LocalDateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0)
+        timestamp: LocalDateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0),
     ) = EventDto(
         key = key,
         value = value,
         userId = userId,
-        timestamp = timestamp
+        timestamp = timestamp,
     )
 
     @Test
@@ -68,7 +67,7 @@ class EventControllerTest {
         mockMvc.perform(
             post("/api/v1/events")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postDto))
+                .content(objectMapper.writeValueAsString(postDto)),
         )
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
@@ -89,7 +88,7 @@ class EventControllerTest {
         mockMvc.perform(
             post("/api/v1/events")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postDto))
+                .content(objectMapper.writeValueAsString(postDto)),
         )
             .andExpect(status().isInternalServerError())
     }
@@ -97,16 +96,17 @@ class EventControllerTest {
     @Test
     @DisplayName("Should return bad request for invalid event data")
     fun shouldReturnBadRequestForInvalidEventData() {
-        val invalidDto = mapOf(
-            "key" to "",
-            "value" to "",
-            "userId" to 0
-        )
+        val invalidDto =
+            mapOf(
+                "key" to "",
+                "value" to "",
+                "userId" to 0,
+            )
 
         mockMvc.perform(
             post("/api/v1/events")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidDto))
+                .content(objectMapper.writeValueAsString(invalidDto)),
         )
             .andExpect(status().isBadRequest())
     }
@@ -119,7 +119,7 @@ class EventControllerTest {
         mockMvc.perform(
             post("/api/v1/events")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(incompleteDto))
+                .content(objectMapper.writeValueAsString(incompleteDto)),
         )
             .andExpect(status().isBadRequest())
     }
@@ -130,7 +130,7 @@ class EventControllerTest {
         mockMvc.perform(
             post("/api/v1/events")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{ invalid json }")
+                .content("{ invalid json }"),
         )
             .andExpect(status().isBadRequest())
     }
@@ -139,20 +139,21 @@ class EventControllerTest {
     @DisplayName("Should return events by key when found")
     fun shouldReturnEventsByKeyWhenFound() {
         val key = "challenge_completed"
-        val events = listOf(
-            createValidEventDto(
-                key = key,
-                value = "gym_challenge",
-                userId = 123L,
-                timestamp = LocalDateTime.of(2024, 1, 1, 12, 0, 0)
-            ),
-            createValidEventDto(
-                key = key,
-                value = "running_challenge",
-                userId = 456L,
-                timestamp = LocalDateTime.of(2024, 1, 2, 14, 30, 0)
+        val events =
+            listOf(
+                createValidEventDto(
+                    key = key,
+                    value = "gym_challenge",
+                    userId = 123L,
+                    timestamp = LocalDateTime.of(2024, 1, 1, 12, 0, 0),
+                ),
+                createValidEventDto(
+                    key = key,
+                    value = "running_challenge",
+                    userId = 456L,
+                    timestamp = LocalDateTime.of(2024, 1, 2, 14, 30, 0),
+                ),
             )
-        )
 
         `when`(eventService.getEventsByKey(key))
             .thenReturn(GetEventsResult.Success(events))
@@ -250,18 +251,20 @@ class EventControllerTest {
     @Test
     @DisplayName("Should create event with different field combinations")
     fun shouldCreateEventWithDifferentFieldCombinations() {
-        val testCases = listOf(
-            createValidPostEventDto(key = "a", value = "x", userId = 1L),
-            createValidPostEventDto(key = "a".repeat(30), value = "b".repeat(200), userId = Long.MAX_VALUE),
-            createValidPostEventDto(key = "test_key", value = "JSON: {\"id\":123}", userId = 999L)
-        )
+        val testCases =
+            listOf(
+                createValidPostEventDto(key = "a", value = "x", userId = 1L),
+                createValidPostEventDto(key = "a".repeat(30), value = "b".repeat(200), userId = Long.MAX_VALUE),
+                createValidPostEventDto(key = "test_key", value = "JSON: {\"id\":123}", userId = 999L),
+            )
 
         testCases.forEach { postDto ->
-            val createdEvent = createValidEventDto(
-                key = postDto.key,
-                value = postDto.value,
-                userId = postDto.userId
-            )
+            val createdEvent =
+                createValidEventDto(
+                    key = postDto.key,
+                    value = postDto.value,
+                    userId = postDto.userId,
+                )
 
             `when`(eventService.createEvent(postDto))
                 .thenReturn(CreateEventResult.Success(createdEvent))
@@ -269,7 +272,7 @@ class EventControllerTest {
             mockMvc.perform(
                 post("/api/v1/events")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(postDto))
+                    .content(objectMapper.writeValueAsString(postDto)),
             )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.key").value(postDto.key))
@@ -281,20 +284,21 @@ class EventControllerTest {
     @Test
     @DisplayName("Should reject event creation with validation errors")
     fun shouldRejectEventCreationWithValidationErrors() {
-        val invalidCases = listOf(
-            mapOf("key" to "", "value" to "valid", "userId" to 123), // Empty key
-            mapOf("key" to "valid", "value" to "", "userId" to 123), // Empty value
-            mapOf("key" to "valid", "value" to "valid", "userId" to 0), // Zero userId
-            mapOf("key" to "valid", "value" to "valid", "userId" to -1), // Negative userId
-            mapOf("key" to "a".repeat(31), "value" to "valid", "userId" to 123), // Key too long
-            mapOf("key" to "valid", "value" to "b".repeat(201), "userId" to 123) // Value too long
-        )
+        val invalidCases =
+            listOf(
+                mapOf("key" to "", "value" to "valid", "userId" to 123),
+                mapOf("key" to "valid", "value" to "", "userId" to 123),
+                mapOf("key" to "valid", "value" to "valid", "userId" to 0),
+                mapOf("key" to "valid", "value" to "valid", "userId" to -1),
+                mapOf("key" to "a".repeat(31), "value" to "valid", "userId" to 123),
+                mapOf("key" to "valid", "value" to "b".repeat(201), "userId" to 123),
+            )
 
         invalidCases.forEach { invalidDto ->
             mockMvc.perform(
                 post("/api/v1/events")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(invalidDto))
+                    .content(objectMapper.writeValueAsString(invalidDto)),
             )
                 .andExpect(status().isBadRequest())
         }

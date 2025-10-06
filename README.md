@@ -4,7 +4,8 @@ A backend service to handle the CCBot interactions
 
 ## Tech Stack
 
-DB is on [Neon](https://console.neon.tech/app/org-orange-surf-07093034/projects)
+DB is on [Neon](https://console.neon.tech/app/org-orange-surf-07093034/projects)  
+Grafana is used for monitoring and visualization
 
 ## CI/CD
 
@@ -14,8 +15,6 @@ This project uses GitHub Actions for continuous integration and deployment:
 
 Listed below are things that should probably be done at some point, or things that I think would be valuable to learn
 about regardless:  
-TODO: Add events table and build that  
-TODO: Add input sanitization and validation  
 TODO: Add logging and monitoring  
 TODO: Add more tests and increase coverage  
 TODO: Add API documentation (Swagger or Postman)  
