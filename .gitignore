@@ -44,3 +44,6 @@ out/
 
 ### GitHub Actions ###
 .github/actions-cache/
+
+### Local Environment Files ###
+CLAUDE.local.md
