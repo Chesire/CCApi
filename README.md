@@ -11,6 +11,24 @@ Grafana is used for monitoring and visualization
 
 This project uses GitHub Actions for continuous integration and deployment:
 
+## Setup
+
+Loki must be setup, set these environment variables:
+
+```text
+url: ${GRAFANA_LOKI_URL}
+username: ${GRAFANA_LOKI_USERNAME}
+password: ${GRAFANA_LOKI_PASSWORD}
+```
+
+Prometheus must be setup, set these environment variables:
+
+```text
+url: ${GRAFANA_PROMETHEUS_URL}
+username: ${GRAFANA_PROMETHEUS_USERNAME}
+password: ${GRAFANA_PROMETHEUS_PASSWORD}
+```
+
 ## TODO
 
 Listed below are things that should probably be done at some point, or things that I think would be valuable to learn

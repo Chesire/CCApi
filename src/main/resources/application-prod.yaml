@@ -12,3 +12,53 @@ spring:
       ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+logging:
+  level:
+    root: WARN
+    com.chesire.capi: INFO
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+    prometheus:
+      enabled: false
+    info:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        pushgateway:
+          enabled: false
+
+grafana:
+  enabled: true
+  loki:
+    url: ${GRAFANA_LOKI_URL}
+    username: ${GRAFANA_LOKI_USERNAME}
+    password: ${GRAFANA_LOKI_PASSWORD}
+  prometheus:
+    url: ${GRAFANA_PROMETHEUS_URL}
+    username: ${GRAFANA_PROMETHEUS_USERNAME}
+    password: ${GRAFANA_PROMETHEUS_PASSWORD}
+
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+  shutdown: graceful

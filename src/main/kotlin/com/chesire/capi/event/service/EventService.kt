@@ -53,6 +53,5 @@ sealed interface CreateEventResult {
 
 sealed interface GetEventsResult {
     data class Success(val events: List<EventDto>) : GetEventsResult
-
     object UnknownError : GetEventsResult
 }

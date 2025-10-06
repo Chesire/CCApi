@@ -23,13 +23,19 @@ repositories {
 }
 
 dependencies {
+    implementation("ch.qos.logback:logback-classic")
+    implementation("com.github.loki4j:loki-logback-appender:1.5.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.zaxxer:HikariCP")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+    implementation("net.logstash.logback:logstash-logback-encoder:7.4")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.postgresql:postgresql:42.7.2")
+    implementation("org.slf4j:slf4j-api")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("com.zaxxer:HikariCP")
 
     runtimeOnly("com.h2database:h2")
 
@@ -54,7 +60,6 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-// Ktlint configuration
 ktlint {
     version.set("1.0.1")
     android.set(false)
