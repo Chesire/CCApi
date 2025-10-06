@@ -33,6 +33,7 @@ class EventController(private val eventService: EventService) {
     fun getEventsByKey(
         @PathVariable @Size(min = 1, max = 30, message = "Key must be between 1 and 30 characters") key: String
     ): ResponseEntity<List<EventDto>> {
+        // Add pagination at some point
         // Maybe add a from timeframe as well?
         return when (val result = eventService.getEventsByKey(key)) {
             is GetEventsResult.Success -> ResponseEntity.ok(result.events)
