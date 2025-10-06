@@ -19,6 +19,15 @@ class EventService(private val repository: EventRepository) {
         }
     }
 
+    fun getEventsByKey(key: String): GetEventsResult {
+        return try {
+            val result = repository.findByKey(key)
+            GetEventsResult.Success(result.map { it.toDto() })
+        } catch (ex: Exception) {
+            GetEventsResult.UnknownError
+        }
+    }
+
     private fun PostEventDto.toEntity(): EventEntity {
         return EventEntity(
             key = key,
@@ -32,7 +41,7 @@ class EventService(private val repository: EventRepository) {
             key = key,
             value = value,
             userId = userId,
-            timestamp = createdAt ?: LocalDateTime.now() // just do now for now
+            timestamp = createdAt ?: LocalDateTime.now() // just fallback to now for now
         )
     }
 }
@@ -40,4 +49,9 @@ class EventService(private val repository: EventRepository) {
 sealed interface CreateEventResult {
     data class Success(val event: EventDto) : CreateEventResult
     object UnknownError : CreateEventResult
+}
+
+sealed interface GetEventsResult {
+    data class Success(val events: List<EventDto>) : GetEventsResult
+    object UnknownError : GetEventsResult
 }
