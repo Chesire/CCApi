@@ -33,8 +33,6 @@ password: ${GRAFANA_PROMETHEUS_PASSWORD}
 
 Listed below are things that should probably be done at some point, or things that I think would be valuable to learn
 about regardless:  
-TODO: Add logging and monitoring  
-TODO: Add more tests and increase coverage  
 TODO: Add API documentation (Swagger or Postman)  
 TODO: Add authentication and authorization (JWT or OAuth)  
 TODO: Add rate limiting and throttling  
