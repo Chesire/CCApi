@@ -4,43 +4,91 @@ import com.chesire.capi.challenge.data.ChallengeEntity
 import com.chesire.capi.challenge.data.ChallengeRepository
 import com.chesire.capi.challenge.dto.ChallengeDto
 import com.chesire.capi.challenge.dto.PostChallengeDto
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
 class ChallengeService(private val repository: ChallengeRepository) {
     fun getChallenges(userId: Long): GetChallengesResult {
-        val allForUser = repository.findByUserId(userId)
+        logger.debug("Starting getChallenges for userId={}", userId)
+        val startTime = System.currentTimeMillis()
+
         return try {
+            val allForUser = repository.findByUserId(userId)
+            val queryTime = System.currentTimeMillis() - startTime
+            logger.debug(
+                "Database query completed in {}ms for userId={}, found {} challenges",
+                queryTime,
+                userId,
+                allForUser.size
+            )
+
             if (allForUser.isEmpty()) {
+                logger.info("No challenges exist for userId={}", userId)
                 GetChallengesResult.NotFound
             } else {
-                GetChallengesResult.Success(
-                    allForUser.map {
-                        ChallengeDto(
-                            id = it.id,
-                            name = it.name,
-                            description = it.description,
-                            timeFrame = it.timeFrame,
-                            allowPauses = it.allowPauses,
-                            cheats = it.cheats,
-                        )
-                    },
+                val challenges = allForUser.map { it.toChallengeDto() }
+                val totalTime = System.currentTimeMillis() - startTime
+                logger.info(
+                    "Successfully retrieved and mapped {} challenges for userId={} in {}ms",
+                    challenges.size, userId, totalTime
                 )
+
+                GetChallengesResult.Success(challenges)
             }
         } catch (ex: Exception) {
+            val totalTime = System.currentTimeMillis() - startTime
+            logger.error(
+                "Error retrieving challenges for userId={} after {}ms: {} - {}",
+                userId,
+                totalTime,
+                ex.javaClass.simpleName,
+                ex.message,
+                ex
+            )
+
             GetChallengesResult.UnknownError
         }
     }
 
     fun getChallenge(challengeId: Long): GetChallengeResult {
+        logger.debug("Starting getChallenge for challengeId={}", challengeId)
+        val startTime = System.currentTimeMillis()
+
         return try {
             val challenge = repository.findById(challengeId).orElse(null)
+            val queryTime = System.currentTimeMillis() - startTime
+
             if (challenge == null) {
+                logger.info("Challenge not found in database: challengeId={} (query took {}ms)", challengeId, queryTime)
                 GetChallengeResult.NotFound
             } else {
-                GetChallengeResult.Success(challenge.toRetrieveChallengeDto())
+                logger.debug(
+                    "Found challenge in database: challengeId={}, name='{}', userId={} (query took {}ms)",
+                    challengeId,
+                    challenge.name,
+                    challenge.userId,
+                    queryTime
+                )
+                val dto = challenge.toChallengeDto()
+                val totalTime = System.currentTimeMillis() - startTime
+                logger.info(
+                    "Successfully retrieved and mapped challenge: challengeId={} in {}ms",
+                    challengeId,
+                    totalTime
+                )
+                GetChallengeResult.Success(dto)
             }
         } catch (ex: Exception) {
+            val totalTime = System.currentTimeMillis() - startTime
+            logger.error(
+                "Error retrieving challenge challengeId={} after {}ms: {} - {}",
+                challengeId,
+                totalTime,
+                ex.javaClass.simpleName,
+                ex.message,
+                ex
+            )
             GetChallengeResult.UnknownError
         }
     }
@@ -49,25 +97,106 @@ class ChallengeService(private val repository: ChallengeRepository) {
         data: PostChallengeDto,
         userId: Long,
     ): PostChallengeResult {
+        logger.info(
+            "Starting challenge creation: name='{}', timeFrame={}, userId={}",
+            data.name,
+            data.timeFrame,
+            userId
+        )
+        val startTime = System.currentTimeMillis()
+
         return try {
-            val result = repository.save(data.toEntity(userId))
-            PostChallengeResult.Success(result.toRetrieveChallengeDto())
+            val entity = data.toEntity(userId)
+            logger.debug(
+                "Created challenge entity: name='{}', description='{}', allowPauses={}, cheats={}",
+                entity.name,
+                entity.description,
+                entity.allowPauses,
+                entity.cheats
+            )
+
+            val saveStartTime = System.currentTimeMillis()
+            val result = repository.save(entity)
+            val saveTime = System.currentTimeMillis() - saveStartTime
+            logger.debug("Database save completed in {}ms: challengeId={}", saveTime, result.id)
+
+            val dto = result.toChallengeDto()
+            val totalTime = System.currentTimeMillis() - startTime
+            logger.info(
+                "Successfully created challenge: challengeId={}, name='{}' in {}ms",
+                result.id,
+                result.name,
+                totalTime
+            )
+
+            PostChallengeResult.Success(dto)
         } catch (ex: Exception) {
+            val totalTime = System.currentTimeMillis() - startTime
+            logger.error(
+                "Error creating challenge '{}' for userId={} after {}ms: {} - {}",
+                data.name,
+                userId,
+                totalTime,
+                ex.javaClass.simpleName,
+                ex.message,
+                ex
+            )
             PostChallengeResult.UnknownError
         }
     }
 
     fun deleteChallenge(challengeId: Long): DeleteChallengeResult {
-        return if (repository.existsById(challengeId)) {
-            try {
+        logger.info("Starting challenge deletion: challengeId={}", challengeId)
+        val startTime = System.currentTimeMillis()
+
+        return try {
+            val exists = itemExistsInDB(challengeId)
+
+            if (exists) {
+                val deleteStartTime = System.currentTimeMillis()
                 repository.deleteById(challengeId)
+                val deleteTime = System.currentTimeMillis() - deleteStartTime
+                logger.debug("Database delete completed in {}ms: challengeId={}", deleteTime, challengeId)
+
+                val totalTime = System.currentTimeMillis() - startTime
+                logger.info("Successfully deleted challenge: challengeId={} in {}ms", challengeId, totalTime)
                 DeleteChallengeResult.Success
-            } catch (ex: Exception) {
-                DeleteChallengeResult.UnknownError
+            } else {
+                val totalTime = System.currentTimeMillis() - startTime
+                logger.info(
+                    "Challenge not found for deletion: challengeId={} (total time {}ms)",
+                    challengeId,
+                    totalTime
+                )
+                DeleteChallengeResult.NotFound
             }
-        } else {
-            DeleteChallengeResult.NotFound
+        } catch (ex: Exception) {
+            val totalTime = System.currentTimeMillis() - startTime
+            logger.error(
+                "Error deleting challenge challengeId={} after {}ms: {} - {}",
+                challengeId,
+                totalTime,
+                ex.javaClass.simpleName,
+                ex.message,
+                ex
+            )
+            DeleteChallengeResult.UnknownError
         }
+    }
+
+    private fun itemExistsInDB(challengeId: Long): Boolean {
+        val existsStartTime = System.currentTimeMillis()
+        val exists = repository.existsById(challengeId)
+        val existsTime = System.currentTimeMillis() - existsStartTime
+
+        logger.debug(
+            "Existence check completed in {}ms: challengeId={}, exists={}",
+            existsTime,
+            challengeId,
+            exists
+        )
+
+        return exists
     }
 
     private fun PostChallengeDto.toEntity(userId: Long) =
@@ -80,7 +209,7 @@ class ChallengeService(private val repository: ChallengeRepository) {
             cheats = cheats,
         )
 
-    private fun ChallengeEntity.toRetrieveChallengeDto() =
+    private fun ChallengeEntity.toChallengeDto() =
         ChallengeDto(
             id = id,
             name = name,
@@ -89,38 +218,33 @@ class ChallengeService(private val repository: ChallengeRepository) {
             allowPauses = allowPauses,
             cheats = cheats,
         )
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(ChallengeService::class.java)
+    }
 }
 
 sealed interface GetChallengesResult {
     data class Success(val challenges: List<ChallengeDto>) : GetChallengesResult
-
     object NotFound : GetChallengesResult
-
     object UnknownError : GetChallengesResult
 }
 
 sealed interface GetChallengeResult {
     data class Success(val challenge: ChallengeDto) : GetChallengeResult
-
     object NotFound : GetChallengeResult
-
     object UnknownError : GetChallengeResult
 }
 
 sealed interface PostChallengeResult {
     data class Success(val challenge: ChallengeDto) : PostChallengeResult
-
     object InvalidData : PostChallengeResult
-
     object NotFound : PostChallengeResult
-
     object UnknownError : PostChallengeResult
 }
 
 sealed interface DeleteChallengeResult {
     object Success : DeleteChallengeResult
-
     object NotFound : DeleteChallengeResult
-
     object UnknownError : DeleteChallengeResult
 }
