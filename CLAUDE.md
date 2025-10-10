@@ -20,6 +20,7 @@ This file contains instructions and context for AI assistants working on this pr
     - **Educational focus**: Frame explanations as learning opportunities, not just fixes
     - **Context matters**: Explain how changes fit into the broader project architecture and goals
 - Treat every change as a teaching moment to help the user understand and improve their development skills
+- When suggesting a new sdk, try to suggest ones that are industry standard, instead of what is easier for development
 
 ## Development Standards
 
@@ -36,6 +37,7 @@ This file contains instructions and context for AI assistants working on this pr
 - Prefer Spring Boot starters over individual dependencies
 - Keep dependencies up to date for security
 - Only add new dependencies when absolutely necessary
+- Always explain why a new dependency is needed and what it does
 
 ### Database
 
@@ -159,9 +161,9 @@ src/
 
 - **Add tests incrementally, one at a time** - Never add multiple tests simultaneously
 - **Explain each test thoroughly** before writing it:
-  - **WHAT** the test is verifying (the specific behavior or scenario)
-  - **WHY** this test is important (what could break without it)
-  - **HOW** the test works (the setup, execution, and assertions)
+    - **WHAT** the test is verifying (the specific behavior or scenario)
+    - **WHY** this test is important (what could break without it)
+    - **HOW** the test works (the setup, execution, and assertions)
 - **Educational focus**: Treat each test as a learning opportunity
 - **Build understanding gradually**: Start with simple happy path tests, then add edge cases
 - **Verify each test passes** before moving to the next one
@@ -175,14 +177,15 @@ src/
 - **Test boundary conditions** and edge cases explicitly
 
 **Example Format:**
+
 ```kotlin
 @Test
 @DisplayName("Should reject empty name")
 fun shouldRejectEmptyName() {
     val dto = createValidDto().copy(name = "")
-    
+
     val violations = validate(dto)
-    
+
     assertThat(violations).hasSize(1)
     assertThat(violations.first().message).contains("name is required")
 }
@@ -195,7 +198,13 @@ fun shouldRejectEmptyName() {
 - **End-to-End Tests**: Test complete request/response cycles
 
 <tool_calling>
-You have the capability to call multiple tools in a single response. For maximum efficiency, whenever you need to perform multiple independent operations, ALWAYS call tools simultaneously whenever the actions can be done in parallel rather than sequentially.
-Especially when exploring repository, searching, reading files, viewing directories, validating changes, reporting progress or replying to comments. For Example you can read 3 different files parallelly, or report progress and edit different files in parallel. Always report progress in parallel with other tool calls that follow it as it does not depend on the result of those calls.
-However, if some tool calls depend on previous calls to inform dependent values like the parameters, do NOT call these tools in parallel and instead call them sequentially.
+You have the capability to call multiple tools in a single response. For maximum efficiency, whenever you need to
+perform multiple independent operations, ALWAYS call tools simultaneously whenever the actions can be done in parallel
+rather than sequentially.
+Especially when exploring repository, searching, reading files, viewing directories, validating changes, reporting
+progress or replying to comments. For Example you can read 3 different files parallelly, or report progress and edit
+different files in parallel. Always report progress in parallel with other tool calls that follow it as it does not
+depend on the result of those calls.
+However, if some tool calls depend on previous calls to inform dependent values like the parameters, do NOT call these
+tools in parallel and instead call them sequentially.
 </tool_calling>
