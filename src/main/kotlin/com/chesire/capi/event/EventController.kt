@@ -7,6 +7,7 @@ import com.chesire.capi.event.service.EventService
 import com.chesire.capi.event.service.GetEventsResult
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Size
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,9 +25,17 @@ class EventController(private val eventService: EventService) {
     fun createEvent(
         @Valid @RequestBody data: PostEventDto,
     ): ResponseEntity<EventDto> {
+        logger.info("Creating event with key={}", data.key)
         return when (val result = eventService.createEvent(data)) {
-            is CreateEventResult.Success -> ResponseEntity.ok(result.event)
-            CreateEventResult.UnknownError -> ResponseEntity.internalServerError().build()
+            is CreateEventResult.Success -> {
+                logger.info("Successfully created event with key={}", result.event.key)
+                ResponseEntity.ok(result.event)
+            }
+
+            CreateEventResult.UnknownError -> {
+                logger.error("Unknown error creating event with key={}", data.key)
+                ResponseEntity.internalServerError().build()
+            }
         }
     }
 
@@ -36,9 +45,21 @@ class EventController(private val eventService: EventService) {
     ): ResponseEntity<List<EventDto>> {
         // Add pagination at some point
         // Maybe add a from timeframe as well?
+        logger.info("Fetching events for key={}", key)
         return when (val result = eventService.getEventsByKey(key)) {
-            is GetEventsResult.Success -> ResponseEntity.ok(result.events)
-            GetEventsResult.UnknownError -> ResponseEntity.internalServerError().build()
+            is GetEventsResult.Success -> {
+                logger.info("Successfully fetched {} events for key={}", result.events.size, key)
+                ResponseEntity.ok(result.events)
+            }
+
+            GetEventsResult.UnknownError -> {
+                logger.error("Unknown error fetching events for key={}", key)
+                ResponseEntity.internalServerError().build()
+            }
         }
+    }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(EventController::class.java)
     }
 }
