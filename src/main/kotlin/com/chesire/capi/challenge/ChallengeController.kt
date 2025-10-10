@@ -9,6 +9,7 @@ import com.chesire.capi.challenge.service.GetChallengesResult
 import com.chesire.capi.challenge.service.PostChallengeResult
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Positive
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -27,10 +28,22 @@ class ChallengeController(private val challengeService: ChallengeService) {
     fun getChallengesByUser(
         @PathVariable @Positive(message = "User ID must be positive") userId: Long,
     ): ResponseEntity<List<ChallengeDto>> {
+        logger.info("Fetching challenges for userId={}", userId)
         return when (val result = challengeService.getChallenges(userId)) {
-            is GetChallengesResult.Success -> ResponseEntity.ok(result.challenges)
-            GetChallengesResult.NotFound -> ResponseEntity.noContent().build()
-            GetChallengesResult.UnknownError -> ResponseEntity.internalServerError().build()
+            is GetChallengesResult.Success -> {
+                logger.info("Successfully fetched {} challenges for userId={}", result.challenges.size, userId)
+                ResponseEntity.ok(result.challenges)
+            }
+
+            GetChallengesResult.NotFound -> {
+                logger.info("No challenges found for userId={}", userId)
+                ResponseEntity.noContent().build()
+            }
+
+            GetChallengesResult.UnknownError -> {
+                logger.error("Unknown error fetching challenges for userId={}", userId)
+                ResponseEntity.internalServerError().build()
+            }
         }
     }
 
@@ -38,10 +51,26 @@ class ChallengeController(private val challengeService: ChallengeService) {
     fun getChallengeById(
         @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long,
     ): ResponseEntity<ChallengeDto> {
+        logger.info("Fetching challenge for challengeId={}", challengeId)
         return when (val result = challengeService.getChallenge(challengeId)) {
-            is GetChallengeResult.Success -> ResponseEntity.ok(result.challenge)
-            GetChallengeResult.NotFound -> ResponseEntity.noContent().build()
-            GetChallengeResult.UnknownError -> ResponseEntity.internalServerError().build()
+            is GetChallengeResult.Success -> {
+                logger.info(
+                    "Successfully fetched challenge for challengeId={}, name={}",
+                    challengeId,
+                    result.challenge.name
+                )
+                ResponseEntity.ok(result.challenge)
+            }
+
+            GetChallengeResult.NotFound -> {
+                logger.info("Challenge not found for challengeId={}", challengeId)
+                ResponseEntity.noContent().build()
+            }
+
+            GetChallengeResult.UnknownError -> {
+                logger.error("Unknown error fetching challenge for challengeId={}", challengeId)
+                ResponseEntity.internalServerError().build()
+            }
         }
     }
 
@@ -50,11 +79,31 @@ class ChallengeController(private val challengeService: ChallengeService) {
         @Valid @RequestBody data: PostChallengeDto,
     ): ResponseEntity<ChallengeDto> {
         // TODO: Need to pass the users id to validate they can add this challenge
+        logger.info("Creating challenge with name={}", data.name)
         return when (val result = challengeService.addChallenge(data, 0L)) {
-            is PostChallengeResult.Success -> ResponseEntity.ok(result.challenge)
-            PostChallengeResult.InvalidData -> ResponseEntity.badRequest().build()
-            PostChallengeResult.NotFound -> ResponseEntity.noContent().build()
-            PostChallengeResult.UnknownError -> ResponseEntity.internalServerError().build()
+            is PostChallengeResult.Success -> {
+                logger.info(
+                    "Successfully created challenge with id={}, name={}",
+                    result.challenge.id,
+                    result.challenge.name
+                )
+                ResponseEntity.ok(result.challenge)
+            }
+
+            PostChallengeResult.InvalidData -> {
+                logger.warn("Invalid data provided when trying to create challenge with name={}", data.name)
+                ResponseEntity.badRequest().build()
+            }
+
+            PostChallengeResult.NotFound -> {
+                logger.warn("Related entity not found when trying to create challenge with name={}", data.name)
+                ResponseEntity.noContent().build()
+            }
+
+            PostChallengeResult.UnknownError -> {
+                logger.error("Unknown error creating challenge with name={}", data.name)
+                ResponseEntity.internalServerError().build()
+            }
         }
     }
 
@@ -63,11 +112,26 @@ class ChallengeController(private val challengeService: ChallengeService) {
         @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long,
     ): ResponseEntity<Void> {
         // TODO: Need to pass the users token to validate they can delete this challenge
-        val result = challengeService.deleteChallenge(challengeId)
-        return when (result) {
-            DeleteChallengeResult.Success -> ResponseEntity.noContent().build()
-            DeleteChallengeResult.NotFound -> ResponseEntity.noContent().build()
-            DeleteChallengeResult.UnknownError -> ResponseEntity.internalServerError().build()
+        logger.info("Deleting challenge with challengeId={}", challengeId)
+        return when (challengeService.deleteChallenge(challengeId)) {
+            DeleteChallengeResult.Success -> {
+                logger.info("Successfully deleted challenge with challengeId={}", challengeId)
+                ResponseEntity.noContent().build()
+            }
+
+            DeleteChallengeResult.NotFound -> {
+                logger.warn("Challenge not found when trying to delete challenge with challengeId={}", challengeId)
+                ResponseEntity.noContent().build()
+            }
+
+            DeleteChallengeResult.UnknownError -> {
+                logger.error("Unknown error deleting challenge with challengeId={}", challengeId)
+                ResponseEntity.internalServerError().build()
+            }
         }
+    }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(ChallengeController::class.java)
     }
 }
