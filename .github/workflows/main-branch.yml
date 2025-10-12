@@ -80,7 +80,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/${{ github.repository_owner }}/ccapi
           tags: |
             type=ref,event=branch
             type=sha,prefix={{branch}}-
@@ -99,14 +99,14 @@ jobs:
       - name: Docker | Test
         run: |
           # Pull and test the image we just pushed
-          docker pull ghcr.io/${{ github.repository }}:latest
+          docker pull ghcr.io/${{ github.repository_owner }}/ccapi:latest
           docker run -d --name ccapi-prod-test -p 8080:8080 \
             -e SPRING_PROFILES_ACTIVE=dev \
-            ghcr.io/${{ github.repository }}:latest
-
+            ghcr.io/${{ github.repository_owner }}/ccapi:latest
+          
           # Wait for startup and test
           timeout 60s bash -c 'until curl -f http://localhost:8080/actuator/health; do sleep 2; done'
-
+          
           # Verify health
           response=$(curl -s http://localhost:8080/actuator/health)
           if [[ "$response" == *"UP"* ]]; then
@@ -116,6 +116,8 @@ jobs:
             exit 1
           fi
 
-          # Cleanup
-          docker stop ccapi-prod-test
-          docker rm ccapi-prod-test
+      - name: Docker | Cleanup
+        if: always()
+        run: |
+          docker stop ccapi-prod-test || true
+          docker rm ccapi-prod-test || true
