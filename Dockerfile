@@ -1,6 +1,6 @@
 # Multi-stage Docker build for Spring Boot application
 # Stage 1: Build the application
-FROM gradle:8.5-jdk21-alpine AS builder
+FROM gradle:8.5-jdk23-alpine AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY src/ ./src/
 RUN ./gradlew bootJar --no-daemon
 
 # Stage 2: Runtime image - Use Eclipse Temurin (matches GitHub Actions)
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:23-jre-alpine
 
 WORKDIR /app
 
