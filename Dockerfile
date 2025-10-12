@@ -1,12 +1,15 @@
 # Multi-stage Docker build for Spring Boot application
-# Stage 1: Build the application
-FROM gradle:8.5-jdk23-alpine AS builder
+# Stage 1: Build the application - Use Eclipse Temurin JDK 23 + Gradle Wrapper
+FROM eclipse-temurin:23-jdk-alpine AS builder
 
 WORKDIR /app
 
-# Copy gradle files first for better caching
-COPY build.gradle.kts settings.gradle.kts gradlew ./
+# Copy gradle wrapper files (most efficient approach)
+COPY gradlew ./
 COPY gradle/ ./gradle/
+
+# Copy gradle files first for better caching
+COPY build.gradle.kts settings.gradle.kts ./
 
 # Download dependencies (cached layer)
 RUN ./gradlew dependencies --no-daemon
