@@ -74,13 +74,13 @@ class ChallengeController(private val challengeService: ChallengeService) {
         }
     }
 
-    @PostMapping
+    @PostMapping("/user/{userId}")
     fun createChallenge(
+        @PathVariable @Positive userId: Long,
         @Valid @RequestBody data: PostChallengeDto,
     ): ResponseEntity<ChallengeDto> {
-        // TODO: Need to pass the users id to validate they can add this challenge
-        logger.info("Creating challenge with name={}", data.name)
-        return when (val result = challengeService.addChallenge(data, 0L)) {
+        logger.info("Creating challenge for userId={}, with name={}", userId, data.name)
+        return when (val result = challengeService.addChallenge(data, userId)) {
             is PostChallengeResult.Success -> {
                 logger.info(
                     "Successfully created challenge with id={}, name={}",

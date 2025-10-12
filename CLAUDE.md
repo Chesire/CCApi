@@ -21,6 +21,8 @@ This file contains instructions and context for AI assistants working on this pr
     - **Context matters**: Explain how changes fit into the broader project architecture and goals
 - Treat every change as a teaching moment to help the user understand and improve their development skills
 - When suggesting a new sdk, try to suggest ones that are industry standard, instead of what is easier for development
+- When asked a question about the codebase, just answer it directly, do not try to edit any files unless explicitly
+  asked to do so
 
 ## Development Standards
 
