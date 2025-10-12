@@ -1,0 +1,37 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+.github/
+
+# Build artifacts
+build/
+.gradle/
+gradle-app.setting
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Documentation
+README.md
+CLAUDE.md
+CLAUDE.local.md
+LICENSE
+
+# Docker files (avoid recursion)
+Dockerfile
+.dockerignore
+docker-compose*.yml
