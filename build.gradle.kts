@@ -1,3 +1,5 @@
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
 plugins {
     kotlin("jvm") version "2.1.0"
     kotlin("plugin.jpa") version "2.1.0"
@@ -66,8 +68,8 @@ ktlint {
     android.set(false)
     ignoreFailures.set(true)
     reporters {
-        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
-        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.JSON)
+        reporter(ReporterType.CHECKSTYLE)
+        reporter(ReporterType.JSON)
     }
 }
 
