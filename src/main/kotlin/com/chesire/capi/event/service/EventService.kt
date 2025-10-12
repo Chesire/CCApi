@@ -27,7 +27,7 @@ class EventService(private val repository: EventRepository) {
                 "Successfully created event: eventId={}, key='{}' in {}ms",
                 result.id,
                 result.eventKey,
-                totalTime
+                totalTime,
             )
 
             CreateEventResult.Success(dto)
@@ -39,7 +39,7 @@ class EventService(private val repository: EventRepository) {
                 totalTime,
                 ex.javaClass.simpleName,
                 ex.message,
-                ex
+                ex,
             )
             CreateEventResult.UnknownError
         }
@@ -56,7 +56,7 @@ class EventService(private val repository: EventRepository) {
                 "Database query completed in {}ms for key='{}', found {} events",
                 queryTime,
                 key,
-                events.size
+                events.size,
             )
 
             val eventDtos = events.map { it.toDto() }
@@ -65,7 +65,7 @@ class EventService(private val repository: EventRepository) {
                 "Successfully retrieved and mapped {} events for key='{}' in {}ms",
                 eventDtos.size,
                 key,
-                totalTime
+                totalTime,
             )
 
             GetEventsResult.Success(eventDtos)
@@ -77,7 +77,7 @@ class EventService(private val repository: EventRepository) {
                 totalTime,
                 ex.javaClass.simpleName,
                 ex.message,
-                ex
+                ex,
             )
             GetEventsResult.UnknownError
         }
@@ -107,10 +107,12 @@ class EventService(private val repository: EventRepository) {
 
 sealed interface CreateEventResult {
     data class Success(val event: EventDto) : CreateEventResult
+
     object UnknownError : CreateEventResult
 }
 
 sealed interface GetEventsResult {
     data class Success(val events: List<EventDto>) : GetEventsResult
+
     object UnknownError : GetEventsResult
 }

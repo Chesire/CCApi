@@ -57,7 +57,7 @@ class ChallengeController(private val challengeService: ChallengeService) {
                 logger.info(
                     "Successfully fetched challenge for challengeId={}, name={}",
                     challengeId,
-                    result.challenge.name
+                    result.challenge.name,
                 )
                 ResponseEntity.ok(result.challenge)
             }
@@ -85,7 +85,7 @@ class ChallengeController(private val challengeService: ChallengeService) {
                 logger.info(
                     "Successfully created challenge with id={}, name={}",
                     result.challenge.id,
-                    result.challenge.name
+                    result.challenge.name,
                 )
                 ResponseEntity.ok(result.challenge)
             }

@@ -16,21 +16,23 @@ class GlobalExceptionHandler {
     fun handleValidationExceptions(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
         logger.warn(
             "Validation failed for request: {} validation errors found",
-            ex.bindingResult.fieldErrors.size
+            ex.bindingResult.fieldErrors.size,
         )
 
-        val validationErrors = ex.bindingResult.fieldErrors.map { fieldError ->
-            ValidationError(
-                field = fieldError.field,
-                rejectedValue = fieldError.rejectedValue,
-                message = fieldError.defaultMessage ?: "Invalid value",
+        val validationErrors =
+            ex.bindingResult.fieldErrors.map { fieldError ->
+                ValidationError(
+                    field = fieldError.field,
+                    rejectedValue = fieldError.rejectedValue,
+                    message = fieldError.defaultMessage ?: "Invalid value",
+                )
+            }
+        val errorResponse =
+            ErrorResponse(
+                message = "Validation failed",
+                details = "One or more fields have invalid values",
+                errors = validationErrors,
             )
-        }
-        val errorResponse = ErrorResponse(
-            message = "Validation failed",
-            details = "One or more fields have invalid values",
-            errors = validationErrors,
-        )
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
     }
 
@@ -38,10 +40,11 @@ class GlobalExceptionHandler {
     fun handleJsonParseException(ex: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
         logger.warn("Malformed JSON request: {}", ex.message)
 
-        val errorResponse = ErrorResponse(
-            message = "Malformed JSON request",
-            details = "Please check your request body format and ensure all required fields are provided",
-        )
+        val errorResponse =
+            ErrorResponse(
+                message = "Malformed JSON request",
+                details = "Please check your request body format and ensure all required fields are provided",
+            )
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
     }
 
@@ -51,13 +54,14 @@ class GlobalExceptionHandler {
             "Parameter type mismatch: parameter '{}' expected type '{}' but received '{}'",
             ex.name,
             ex.requiredType?.simpleName,
-            ex.value
+            ex.value,
         )
 
-        val errorResponse = ErrorResponse(
-            message = "Invalid parameter type",
-            details = "The parameter '${ex.name}' should be of type '${ex.requiredType?.simpleName}'",
-        )
+        val errorResponse =
+            ErrorResponse(
+                message = "Invalid parameter type",
+                details = "The parameter '${ex.name}' should be of type '${ex.requiredType?.simpleName}'",
+            )
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
     }
 
@@ -65,22 +69,24 @@ class GlobalExceptionHandler {
     fun handleConstraintViolationException(ex: ConstraintViolationException): ResponseEntity<ErrorResponse> {
         logger.warn(
             "Constraint violations found: {} violations",
-            ex.constraintViolations.size
+            ex.constraintViolations.size,
         )
 
-        val validationErrors = ex.constraintViolations.map { violation ->
-            ValidationError(
-                field = violation.propertyPath.toString(),
-                rejectedValue = violation.invalidValue,
-                message = violation.message,
+        val validationErrors =
+            ex.constraintViolations.map { violation ->
+                ValidationError(
+                    field = violation.propertyPath.toString(),
+                    rejectedValue = violation.invalidValue,
+                    message = violation.message,
+                )
+            }
+
+        val errorResponse =
+            ErrorResponse(
+                message = "Invalid request parameters",
+                details = "One or more path parameters or request parameters are invalid",
+                errors = validationErrors,
             )
-        }
-
-        val errorResponse = ErrorResponse(
-            message = "Invalid request parameters",
-            details = "One or more path parameters or request parameters are invalid",
-            errors = validationErrors,
-        )
 
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
     }
@@ -91,13 +97,14 @@ class GlobalExceptionHandler {
             "Unexpected exception occurred: {} - {}",
             ex.javaClass.simpleName,
             ex.message,
-            ex
+            ex,
         )
 
-        val errorResponse = ErrorResponse(
-            message = "An unexpected error occurred",
-            details = "Please try again later or contact support if the problem persists",
-        )
+        val errorResponse =
+            ErrorResponse(
+                message = "An unexpected error occurred",
+                details = "Please try again later or contact support if the problem persists",
+            )
         return ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 

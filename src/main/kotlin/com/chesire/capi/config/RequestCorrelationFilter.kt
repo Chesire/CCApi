@@ -16,7 +16,7 @@ class RequestCorrelationFilter : Filter {
     override fun doFilter(
         request: ServletRequest,
         response: ServletResponse,
-        chain: FilterChain
+        chain: FilterChain,
     ) {
         val httpRequest = request as HttpServletRequest
         val httpResponse = response as HttpServletResponse
@@ -31,7 +31,7 @@ class RequestCorrelationFilter : Filter {
             "HTTP Request started: method={}, uri={}, correlationId={}",
             httpRequest.method,
             httpRequest.requestURI,
-            correlationId
+            correlationId,
         )
 
         try {
@@ -45,7 +45,7 @@ class RequestCorrelationFilter : Filter {
                 httpRequest.requestURI,
                 httpResponse.status,
                 duration,
-                correlationId
+                correlationId,
             )
             MDC.clear()
         }

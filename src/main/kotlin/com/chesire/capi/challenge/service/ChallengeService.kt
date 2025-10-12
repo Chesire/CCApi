@@ -20,7 +20,7 @@ class ChallengeService(private val repository: ChallengeRepository) {
                 "Database query completed in {}ms for userId={}, found {} challenges",
                 queryTime,
                 userId,
-                allForUser.size
+                allForUser.size,
             )
 
             if (allForUser.isEmpty()) {
@@ -31,7 +31,9 @@ class ChallengeService(private val repository: ChallengeRepository) {
                 val totalTime = System.currentTimeMillis() - startTime
                 logger.info(
                     "Successfully retrieved and mapped {} challenges for userId={} in {}ms",
-                    challenges.size, userId, totalTime
+                    challenges.size,
+                    userId,
+                    totalTime,
                 )
 
                 GetChallengesResult.Success(challenges)
@@ -44,7 +46,7 @@ class ChallengeService(private val repository: ChallengeRepository) {
                 totalTime,
                 ex.javaClass.simpleName,
                 ex.message,
-                ex
+                ex,
             )
 
             GetChallengesResult.UnknownError
@@ -68,14 +70,14 @@ class ChallengeService(private val repository: ChallengeRepository) {
                     challengeId,
                     challenge.name,
                     challenge.userId,
-                    queryTime
+                    queryTime,
                 )
                 val dto = challenge.toChallengeDto()
                 val totalTime = System.currentTimeMillis() - startTime
                 logger.info(
                     "Successfully retrieved and mapped challenge: challengeId={} in {}ms",
                     challengeId,
-                    totalTime
+                    totalTime,
                 )
                 GetChallengeResult.Success(dto)
             }
@@ -87,7 +89,7 @@ class ChallengeService(private val repository: ChallengeRepository) {
                 totalTime,
                 ex.javaClass.simpleName,
                 ex.message,
-                ex
+                ex,
             )
             GetChallengeResult.UnknownError
         }
@@ -101,7 +103,7 @@ class ChallengeService(private val repository: ChallengeRepository) {
             "Starting challenge creation: name='{}', timeFrame={}, userId={}",
             data.name,
             data.timeFrame,
-            userId
+            userId,
         )
         val startTime = System.currentTimeMillis()
 
@@ -112,7 +114,7 @@ class ChallengeService(private val repository: ChallengeRepository) {
                 entity.name,
                 entity.description,
                 entity.allowPauses,
-                entity.cheats
+                entity.cheats,
             )
 
             val saveStartTime = System.currentTimeMillis()
@@ -126,7 +128,7 @@ class ChallengeService(private val repository: ChallengeRepository) {
                 "Successfully created challenge: challengeId={}, name='{}' in {}ms",
                 result.id,
                 result.name,
-                totalTime
+                totalTime,
             )
 
             PostChallengeResult.Success(dto)
@@ -139,7 +141,7 @@ class ChallengeService(private val repository: ChallengeRepository) {
                 totalTime,
                 ex.javaClass.simpleName,
                 ex.message,
-                ex
+                ex,
             )
             PostChallengeResult.UnknownError
         }
@@ -166,7 +168,7 @@ class ChallengeService(private val repository: ChallengeRepository) {
                 logger.info(
                     "Challenge not found for deletion: challengeId={} (total time {}ms)",
                     challengeId,
-                    totalTime
+                    totalTime,
                 )
                 DeleteChallengeResult.NotFound
             }
@@ -178,7 +180,7 @@ class ChallengeService(private val repository: ChallengeRepository) {
                 totalTime,
                 ex.javaClass.simpleName,
                 ex.message,
-                ex
+                ex,
             )
             DeleteChallengeResult.UnknownError
         }
@@ -193,7 +195,7 @@ class ChallengeService(private val repository: ChallengeRepository) {
             "Existence check completed in {}ms: challengeId={}, exists={}",
             existsTime,
             challengeId,
-            exists
+            exists,
         )
 
         return exists
@@ -226,25 +228,34 @@ class ChallengeService(private val repository: ChallengeRepository) {
 
 sealed interface GetChallengesResult {
     data class Success(val challenges: List<ChallengeDto>) : GetChallengesResult
+
     object NotFound : GetChallengesResult
+
     object UnknownError : GetChallengesResult
 }
 
 sealed interface GetChallengeResult {
     data class Success(val challenge: ChallengeDto) : GetChallengeResult
+
     object NotFound : GetChallengeResult
+
     object UnknownError : GetChallengeResult
 }
 
 sealed interface PostChallengeResult {
     data class Success(val challenge: ChallengeDto) : PostChallengeResult
+
     object InvalidData : PostChallengeResult
+
     object NotFound : PostChallengeResult
+
     object UnknownError : PostChallengeResult
 }
 
 sealed interface DeleteChallengeResult {
     object Success : DeleteChallengeResult
+
     object NotFound : DeleteChallengeResult
+
     object UnknownError : DeleteChallengeResult
 }
