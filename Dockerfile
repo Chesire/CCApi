@@ -15,13 +15,16 @@ RUN ./gradlew dependencies --no-daemon
 COPY src/ ./src/
 RUN ./gradlew bootJar --no-daemon
 
-# Stage 2: Runtime image
-FROM openjdk:21-jre-slim
+# Stage 2: Runtime image - Use Eclipse Temurin (matches GitHub Actions)
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 # Create non-root user for security
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN addgroup -S appuser && adduser -S appuser -G appuser
 
 # Copy the JAR from builder stage
 COPY --from=builder /app/build/libs/*.jar app.jar
