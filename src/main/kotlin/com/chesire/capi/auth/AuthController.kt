@@ -7,6 +7,7 @@ import com.chesire.capi.config.TokenRateLimiter
 import com.chesire.capi.error.TokenRateLimitException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -36,6 +37,7 @@ class AuthController(
         if (!isValidApiKey(apiKey)) {
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid API Key")
         }
+        logger.info("Token requested for Discord user: {}", request.userId)
 
         val clientId = getClientId(httpRequest)
 
@@ -44,6 +46,7 @@ class AuthController(
         }
 
         val token = jwtService.generateToken(request.userId)
+        logger.info("Token generated successfully for Discord user: {}", request.userId)
         return ResponseEntity.ok(AuthResponseDto(token))
     }
 
@@ -58,5 +61,9 @@ class AuthController(
         } else {
             forwardedFor.split(",")[0].trim()
         }
+    }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(AuthController::class.java)
     }
 }
