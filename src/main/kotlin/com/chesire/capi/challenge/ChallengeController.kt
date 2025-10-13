@@ -11,6 +11,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.Positive
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.Authentication
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -74,11 +75,12 @@ class ChallengeController(private val challengeService: ChallengeService) {
         }
     }
 
-    @PostMapping("/user/{userId}")
+    @PostMapping
     fun createChallenge(
-        @PathVariable @Positive userId: Long,
         @Valid @RequestBody data: PostChallengeDto,
+        authentication: Authentication
     ): ResponseEntity<ChallengeDto> {
+        val userId = authentication.principal as Long
         logger.info("Creating challenge for userId={}, with name={}", userId, data.name)
         return when (val result = challengeService.addChallenge(data, userId)) {
             is PostChallengeResult.Success -> {
