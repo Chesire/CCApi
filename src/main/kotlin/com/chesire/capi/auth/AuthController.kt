@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
@@ -44,13 +45,17 @@ class AuthController(
 
         val token = jwtService.generateToken(request.userId, request.guildId)
         logger.info("Token generated successfully for user: {}, in guild: {}", request.userId, request.guildId)
-        return ResponseEntity.ok(
-            AuthResponseDto(
-                token = token,
-                tokenType = "Bearer",
-                expiresIn = jwtService.jwtExpirationSeconds
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CACHE_CONTROL, NO_CACHE_CONTROL)
+            .header(HttpHeaders.PRAGMA, NO_CACHE_PRAGMA)
+            .header(HttpHeaders.EXPIRES, EXPIRED)
+            .body(
+                AuthResponseDto(
+                    token = token,
+                    tokenType = "Bearer",
+                    expiresIn = jwtService.jwtExpirationSeconds
+                )
             )
-        )
     }
 
     private fun isValidApiKey(providedKey: String): Boolean {
@@ -68,5 +73,8 @@ class AuthController(
 
     companion object {
         private val logger = LoggerFactory.getLogger(AuthController::class.java)
+        private const val NO_CACHE_CONTROL = "no-store, no-cache, must-revalidate, private"
+        private const val NO_CACHE_PRAGMA = "no-cache"
+        private const val EXPIRED = "0"
     }
 }
