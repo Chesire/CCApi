@@ -1,8 +1,9 @@
 package com.chesire.capi.auth.dto
 
-import jakarta.validation.constraints.Positive
+import jakarta.validation.constraints.Min
 
 data class AuthRequestDto(
-    @field:Positive(message = "User ID must be positive")
+    // Discord's smallest user ID is 4194304
+    @field:Min(value = 4194304, message = "Invalid Discord user ID format")
     val userId: Long,
 )
