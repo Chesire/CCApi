@@ -44,7 +44,12 @@ class AuthController(
 
         val token = jwtService.generateToken(request.userId, request.guildId)
         logger.info("Token generated successfully for user: {}, in guild: {}", request.userId, request.guildId)
-        return ResponseEntity.ok(AuthResponseDto(token))
+        return ResponseEntity.ok(
+            AuthResponseDto(
+                token = token,
+                expiresIn = jwtService.jwtExpirationSeconds
+            )
+        )
     }
 
     private fun isValidApiKey(providedKey: String): Boolean {
