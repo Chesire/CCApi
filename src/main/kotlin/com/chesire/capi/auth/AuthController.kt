@@ -32,17 +32,14 @@ class AuthController(
     fun generateToken(
         @Valid @RequestBody request: AuthRequestDto,
         @RequestHeader("X-API-Key") apiKey: String,
-        httpRequest: HttpServletRequest,
     ): ResponseEntity<AuthResponseDto> {
         if (!isValidApiKey(apiKey)) {
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid API Key")
         }
         logger.info("Token requested for user: {}, in guild: {}", request.userId, request.guildId)
 
-        val clientId = getClientId(httpRequest)
-
-        if (!rateLimiter.isAllowed(clientId)) {
-            throw TokenRateLimitException("Rate limit exceeded for client: $clientId")
+        if (!rateLimiter.isAllowed(apiKey, request.userId, request.guildId)) {
+            throw TokenRateLimitException("Rate limit exceeded")
         }
 
         val token = jwtService.generateToken(request.userId, request.guildId)
