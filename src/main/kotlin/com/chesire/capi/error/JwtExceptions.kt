@@ -16,3 +16,9 @@ class JwtConfigurationException(message: String, cause: Throwable? = null) : Jwt
  * Results in HTTP 400 - Bad Request
  */
 class JwtGenerationException(message: String, cause: Throwable? = null) : JwtException(message, cause)
+
+/**
+ * Thrown when rate limit is exceeded for token generation
+ * Results in HTTP 429 - Too Many Requests
+ */
+class TokenRateLimitException(message: String) : JwtException(message)

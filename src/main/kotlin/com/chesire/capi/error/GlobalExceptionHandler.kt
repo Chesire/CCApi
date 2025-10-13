@@ -107,6 +107,17 @@ class GlobalExceptionHandler {
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
     }
 
+    @ExceptionHandler(TokenRateLimitException::class)
+    fun handleTokenRateLimitException(ex: TokenRateLimitException): ResponseEntity<ErrorResponse> {
+        logger.warn("Token rate limit exceeded: {}", ex.message)
+
+        val errorResponse = ErrorResponse(
+            message = "Too many requests",
+            details = "Rate limit exceeded. Please try again later."
+        )
+        return ResponseEntity(errorResponse, HttpStatus.TOO_MANY_REQUESTS)
+    }
+
     @ExceptionHandler(Exception::class)
     fun handleGeneralException(ex: Exception): ResponseEntity<ErrorResponse> {
         logger.error(
