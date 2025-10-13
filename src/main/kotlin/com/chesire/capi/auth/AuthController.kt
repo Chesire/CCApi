@@ -47,6 +47,7 @@ class AuthController(
         return ResponseEntity.ok(
             AuthResponseDto(
                 token = token,
+                tokenType = "Bearer",
                 expiresIn = jwtService.jwtExpirationSeconds
             )
         )
