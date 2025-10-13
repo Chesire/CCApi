@@ -5,7 +5,6 @@ import com.chesire.capi.auth.dto.AuthResponseDto
 import com.chesire.capi.config.JwtService
 import com.chesire.capi.config.TokenRateLimiter
 import com.chesire.capi.error.TokenRateLimitException
-import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -60,15 +59,6 @@ class AuthController(
 
     private fun isValidApiKey(providedKey: String): Boolean {
         return providedKey == configuredApiKey
-    }
-
-    private fun getClientId(request: HttpServletRequest): String {
-        val forwardedFor = request.getHeader("X-Forwarded-For")
-        return if (forwardedFor.isNullOrBlank()) {
-            request.remoteAddr
-        } else {
-            forwardedFor.split(",")[0].trim()
-        }
     }
 
     companion object {
