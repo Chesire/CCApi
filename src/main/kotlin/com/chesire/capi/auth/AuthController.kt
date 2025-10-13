@@ -37,7 +37,7 @@ class AuthController(
         if (!isValidApiKey(apiKey)) {
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid API Key")
         }
-        logger.info("Token requested for Discord user: {}", request.userId)
+        logger.info("Token requested for user: {}, in guild: {}", request.userId, request.guildId)
 
         val clientId = getClientId(httpRequest)
 
@@ -45,8 +45,8 @@ class AuthController(
             throw TokenRateLimitException("Rate limit exceeded for client: $clientId")
         }
 
-        val token = jwtService.generateToken(request.userId)
-        logger.info("Token generated successfully for Discord user: {}", request.userId)
+        val token = jwtService.generateToken(request.userId, request.guildId)
+        logger.info("Token generated successfully for user: {}, in guild: {}", request.userId, request.guildId)
         return ResponseEntity.ok(AuthResponseDto(token))
     }
 

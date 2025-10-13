@@ -24,9 +24,9 @@ class JwtService {
         Keys.hmacShaKeyFor(secretKey.toByteArray())
     }
 
-    fun generateToken(userId: Long): String =
+    fun generateToken(userId: Long, guildId: Long): String =
         try {
-            val claims = mutableMapOf<String, Any>(USER_ID to userId)
+            val claims = mutableMapOf<String, Any>(USER_ID to userId, GUILD_ID to guildId)
 
             val token =
                 Jwts
@@ -38,16 +38,21 @@ class JwtService {
                     .signWith(key)
                     .compact()
 
-            logger.debug("Successfully generated JWT token for userId={}", userId)
+            logger.debug("Successfully generated JWT token for userId={}, guildId={}", userId, guildId)
             token
         } catch (ex: InvalidKeyException) {
-            logger.error("JWT key configuration error when generating token for userId={}", userId, ex)
+            logger.error(
+                "JWT key configuration error when generating token for userId={}, guildId={}",
+                userId,
+                guildId,
+                ex
+            )
             throw JwtConfigurationException("JWT key configuration is invalid", ex)
         } catch (ex: IllegalArgumentException) {
-            logger.error("Invalid JWT parameters for userId={}", userId, ex)
+            logger.error("Invalid JWT parameters for userId={}, guildId={}", userId, guildId, ex)
             throw JwtGenerationException("Invalid parameters for token generation", ex)
         } catch (ex: Exception) {
-            logger.error("Unexpected error generating JWT token for userId={}", userId, ex)
+            logger.error("Unexpected error generating JWT token for userId={}, guildId={}", userId, guildId, ex)
             throw JwtConfigurationException("Token generation system error", ex)
         }
 
@@ -77,6 +82,7 @@ class JwtService {
 
     companion object {
         const val USER_ID = "userId"
+        const val GUILD_ID = "guildId"
         private val logger = LoggerFactory.getLogger(JwtService::class.java)
     }
 }
