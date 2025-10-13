@@ -10,11 +10,10 @@ import javax.crypto.SecretKey
 
 @Service
 class JwtService {
-
-    @Value("\${jwt.secret:myDefaultSecretKeyThatShouldBeChangedInProduction}")
+    @Value("\${jwt.secret}")
     private lateinit var secretKey: String
 
-    @Value("\${jwt.expiration:86400000}") // 24 hours in milliseconds
+    @Value("\${jwt.expiration}") // 24 hours in milliseconds
     private var jwtExpiration: Long = 86400000
 
     private val key: SecretKey by lazy {

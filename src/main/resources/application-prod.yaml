@@ -56,6 +56,10 @@ grafana:
     username: ${GRAFANA_PROMETHEUS_USERNAME}
     password: ${GRAFANA_PROMETHEUS_PASSWORD}
 
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:3600000}  # Default 1 hour if not specified
+
 server:
   error:
     include-message: never
