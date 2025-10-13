@@ -142,6 +142,18 @@ src/
     - Connect changes to broader software engineering principles
     - Help the user understand trade-offs and alternatives considered
 
+### File Creation Workflow
+
+- **NEVER create files immediately** when suggesting new functionality
+- **Always explain first** with detailed code snippets and rationale:
+    - Show the complete file content that will be created
+    - Explain each section of the code and its purpose
+    - Describe how it integrates with existing code
+    - Highlight design decisions and alternatives considered
+- **Wait for user confirmation** before creating any new files
+- **Only after approval** should you proceed to create the actual files
+- This ensures the user understands and approves the implementation approach
+
 ### Security Focus
 
 - Validate all inputs at controller level
