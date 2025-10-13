@@ -1,8 +1,12 @@
 package com.chesire.capi.config
 
+import com.chesire.capi.error.JwtConfigurationException
+import com.chesire.capi.error.JwtGenerationException
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.security.InvalidKeyException
 import io.jsonwebtoken.security.Keys
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.Date
@@ -21,15 +25,30 @@ class JwtService {
     }
 
     fun generateToken(userId: Long): String {
-        val claims = mutableMapOf<String, Any>(USER_ID to userId)
+        return try {
+            val claims = mutableMapOf<String, Any>(USER_ID to userId)
 
-        return Jwts.builder()
-            .claims(claims)
-            .subject(userId.toString())
-            .issuedAt(Date(System.currentTimeMillis()))
-            .expiration(Date(System.currentTimeMillis() + jwtExpiration))
-            .signWith(key)
-            .compact()
+            val token = Jwts
+                .builder()
+                .claims(claims)
+                .subject(userId.toString())
+                .issuedAt(Date(System.currentTimeMillis()))
+                .expiration(Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(key)
+                .compact()
+
+            logger.debug("Successfully generated JWT token for userId={}", userId)
+            token
+        } catch (ex: InvalidKeyException) {
+            logger.error("JWT key configuration error when generating token for userId={}", userId, ex)
+            throw JwtConfigurationException("JWT key configuration is invalid", ex)
+        } catch (ex: IllegalArgumentException) {
+            logger.error("Invalid JWT parameters for userId={}", userId, ex)
+            throw JwtGenerationException("Invalid parameters for token generation", ex)
+        } catch (ex: Exception) {
+            logger.error("Unexpected error generating JWT token for userId={}", userId, ex)
+            throw JwtConfigurationException("Token generation system error", ex)
+        }
     }
 
     fun extractUserId(token: String): Long? {
@@ -60,5 +79,6 @@ class JwtService {
 
     companion object {
         const val USER_ID = "userId"
+        private val logger = LoggerFactory.getLogger(JwtService::class.java)
     }
 }
