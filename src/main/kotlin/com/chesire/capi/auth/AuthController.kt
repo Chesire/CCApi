@@ -58,7 +58,15 @@ class AuthController(
     }
 
     private fun isValidApiKey(providedKey: String): Boolean {
-        return providedKey == configuredApiKey
+        val isValid = providedKey == configuredApiKey
+        if (!isValid) {
+            logger.warn(
+                "Authentication failed - invalid API key attempt. Key prefix: {}, Length: {}",
+                providedKey.take(8).padEnd(8, '*'),
+                providedKey.length
+            )
+        }
+        return isValid
     }
 
     companion object {
