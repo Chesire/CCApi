@@ -30,6 +30,10 @@ jwt:
   secret: ${JWT_SECRET:3jFxCSLcbQLEgec2h8ZvWYMltaCOw4Nsobftl2GP0lQ=}
   expiration: 86400000  # 24 hours in milliseconds
 
+capi:
+  auth:
+    api-key: ${CAPI_API_KEY:dev-default-api-key}
+
 management:
   endpoints:
     web:

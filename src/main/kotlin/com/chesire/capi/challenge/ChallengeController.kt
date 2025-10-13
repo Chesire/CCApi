@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.RestController
 @Validated
 @RestController
 @RequestMapping("/api/v1/challenges")
-class ChallengeController(private val challengeService: ChallengeService) {
+class ChallengeController(
+    private val challengeService: ChallengeService,
+) {
     @GetMapping("/user/{userId}")
     fun getChallengesByUser(
         @PathVariable @Positive(message = "User ID must be positive") userId: Long,
@@ -78,7 +80,7 @@ class ChallengeController(private val challengeService: ChallengeService) {
     @PostMapping
     fun createChallenge(
         @Valid @RequestBody data: PostChallengeDto,
-        authentication: Authentication
+        authentication: Authentication,
     ): ResponseEntity<ChallengeDto> {
         val userId = authentication.principal as Long
         logger.info("Creating challenge for userId={}, with name={}", userId, data.name)

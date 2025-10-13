@@ -77,7 +77,8 @@ class ChallengeControllerTest {
 
         val result = mockMvc.perform(get("/api/v1/challenges/{challengeId}", challengeId))
 
-        result.andExpect(status().isOk())
+        result
+            .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
             .andExpect(jsonPath("$.id").value(1))
             .andExpect(jsonPath("$.name").value("Test Challenge"))
@@ -95,7 +96,8 @@ class ChallengeControllerTest {
         `when`(challengeService.getChallenge(challengeId))
             .thenReturn(GetChallengeResult.NotFound)
 
-        mockMvc.perform(get("/api/v1/challenges/{challengeId}", challengeId))
+        mockMvc
+            .perform(get("/api/v1/challenges/{challengeId}", challengeId))
             .andExpect(status().isNoContent())
     }
 
@@ -107,21 +109,24 @@ class ChallengeControllerTest {
         `when`(challengeService.getChallenge(challengeId))
             .thenReturn(GetChallengeResult.UnknownError)
 
-        mockMvc.perform(get("/api/v1/challenges/{challengeId}", challengeId))
+        mockMvc
+            .perform(get("/api/v1/challenges/{challengeId}", challengeId))
             .andExpect(status().isInternalServerError())
     }
 
     @Test
     @DisplayName("Should return bad request for negative challenge ID")
     fun shouldReturnBadRequestForNegativeChallengeId() {
-        mockMvc.perform(get("/api/v1/challenges/{challengeId}", -1L))
+        mockMvc
+            .perform(get("/api/v1/challenges/{challengeId}", -1L))
             .andExpect(status().isBadRequest())
     }
 
     @Test
     @DisplayName("Should return bad request for zero challenge ID")
     fun shouldReturnBadRequestForZeroChallengeId() {
-        mockMvc.perform(get("/api/v1/challenges/{challengeId}", 0L))
+        mockMvc
+            .perform(get("/api/v1/challenges/{challengeId}", 0L))
             .andExpect(status().isBadRequest())
     }
 
@@ -138,7 +143,8 @@ class ChallengeControllerTest {
         `when`(challengeService.getChallenges(userId))
             .thenReturn(GetChallengesResult.Success(challenges))
 
-        mockMvc.perform(get("/api/v1/challenges/user/{userId}", userId))
+        mockMvc
+            .perform(get("/api/v1/challenges/user/{userId}", userId))
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
             .andExpect(jsonPath("$").isArray())
@@ -160,7 +166,8 @@ class ChallengeControllerTest {
         `when`(challengeService.getChallenges(userId))
             .thenReturn(GetChallengesResult.NotFound)
 
-        mockMvc.perform(get("/api/v1/challenges/user/{userId}", userId))
+        mockMvc
+            .perform(get("/api/v1/challenges/user/{userId}", userId))
             .andExpect(status().isNoContent())
     }
 
@@ -172,21 +179,24 @@ class ChallengeControllerTest {
         `when`(challengeService.getChallenges(userId))
             .thenReturn(GetChallengesResult.UnknownError)
 
-        mockMvc.perform(get("/api/v1/challenges/user/{userId}", userId))
+        mockMvc
+            .perform(get("/api/v1/challenges/user/{userId}", userId))
             .andExpect(status().isInternalServerError())
     }
 
     @Test
     @DisplayName("Should return bad request for negative user ID")
     fun shouldReturnBadRequestForNegativeUserId() {
-        mockMvc.perform(get("/api/v1/challenges/user/{userId}", -1L))
+        mockMvc
+            .perform(get("/api/v1/challenges/user/{userId}", -1L))
             .andExpect(status().isBadRequest())
     }
 
     @Test
     @DisplayName("Should return bad request for zero user ID")
     fun shouldReturnBadRequestForZeroUserId() {
-        mockMvc.perform(get("/api/v1/challenges/user/{userId}", 0L))
+        mockMvc
+            .perform(get("/api/v1/challenges/user/{userId}", 0L))
             .andExpect(status().isBadRequest())
     }
 
@@ -199,12 +209,12 @@ class ChallengeControllerTest {
         `when`(challengeService.addChallenge(postDto, 0L))
             .thenReturn(PostChallengeResult.Success(createdChallenge))
 
-        mockMvc.perform(
-            post("/api/v1/challenges")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postDto)),
-        )
-            .andExpect(status().isOk())
+        mockMvc
+            .perform(
+                post("/api/v1/challenges")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(postDto)),
+            ).andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
             .andExpect(jsonPath("$.id").value(1))
             .andExpect(jsonPath("$.name").value("Test Challenge"))
@@ -222,12 +232,12 @@ class ChallengeControllerTest {
         `when`(challengeService.addChallenge(postDto, 0L))
             .thenReturn(PostChallengeResult.InvalidData)
 
-        mockMvc.perform(
-            post("/api/v1/challenges")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postDto)),
-        )
-            .andExpect(status().isBadRequest())
+        mockMvc
+            .perform(
+                post("/api/v1/challenges")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(postDto)),
+            ).andExpect(status().isBadRequest())
     }
 
     @Test
@@ -238,12 +248,12 @@ class ChallengeControllerTest {
         `when`(challengeService.addChallenge(postDto, 0L))
             .thenReturn(PostChallengeResult.NotFound)
 
-        mockMvc.perform(
-            post("/api/v1/challenges")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postDto)),
-        )
-            .andExpect(status().isNoContent())
+        mockMvc
+            .perform(
+                post("/api/v1/challenges")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(postDto)),
+            ).andExpect(status().isNoContent())
     }
 
     @Test
@@ -254,12 +264,12 @@ class ChallengeControllerTest {
         `when`(challengeService.addChallenge(postDto, 0L))
             .thenReturn(PostChallengeResult.UnknownError)
 
-        mockMvc.perform(
-            post("/api/v1/challenges")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postDto)),
-        )
-            .andExpect(status().isInternalServerError())
+        mockMvc
+            .perform(
+                post("/api/v1/challenges")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(postDto)),
+            ).andExpect(status().isInternalServerError())
     }
 
     @Test
@@ -270,7 +280,8 @@ class ChallengeControllerTest {
         `when`(challengeService.deleteChallenge(challengeId))
             .thenReturn(DeleteChallengeResult.Success)
 
-        mockMvc.perform(delete("/api/v1/challenges/{challengeId}", challengeId))
+        mockMvc
+            .perform(delete("/api/v1/challenges/{challengeId}", challengeId))
             .andExpect(status().isNoContent())
     }
 
@@ -282,7 +293,8 @@ class ChallengeControllerTest {
         `when`(challengeService.deleteChallenge(challengeId))
             .thenReturn(DeleteChallengeResult.NotFound)
 
-        mockMvc.perform(delete("/api/v1/challenges/{challengeId}", challengeId))
+        mockMvc
+            .perform(delete("/api/v1/challenges/{challengeId}", challengeId))
             .andExpect(status().isNoContent())
     }
 
@@ -294,21 +306,24 @@ class ChallengeControllerTest {
         `when`(challengeService.deleteChallenge(challengeId))
             .thenReturn(DeleteChallengeResult.UnknownError)
 
-        mockMvc.perform(delete("/api/v1/challenges/{challengeId}", challengeId))
+        mockMvc
+            .perform(delete("/api/v1/challenges/{challengeId}", challengeId))
             .andExpect(status().isInternalServerError())
     }
 
     @Test
     @DisplayName("Should return bad request for negative challenge ID on delete")
     fun shouldReturnBadRequestForNegativeChallengeIdOnDelete() {
-        mockMvc.perform(delete("/api/v1/challenges/{challengeId}", -1L))
+        mockMvc
+            .perform(delete("/api/v1/challenges/{challengeId}", -1L))
             .andExpect(status().isBadRequest())
     }
 
     @Test
     @DisplayName("Should return bad request for zero challenge ID on delete")
     fun shouldReturnBadRequestForZeroChallengeIdOnDelete() {
-        mockMvc.perform(delete("/api/v1/challenges/{challengeId}", 0L))
+        mockMvc
+            .perform(delete("/api/v1/challenges/{challengeId}", 0L))
             .andExpect(status().isBadRequest())
     }
 }

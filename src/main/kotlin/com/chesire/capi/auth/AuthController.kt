@@ -7,12 +7,16 @@ import com.chesire.capi.config.TokenRateLimiter
 import com.chesire.capi.error.TokenRateLimitException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 
 @Validated
 @RestController
@@ -20,13 +24,19 @@ import org.springframework.web.bind.annotation.RestController
 class AuthController(
     private val jwtService: JwtService,
     private val rateLimiter: TokenRateLimiter,
+    @Value("\${capi.auth.api-key}") private val configuredApiKey: String,
 ) {
 
     @PostMapping("/token")
     fun generateToken(
         @Valid @RequestBody request: AuthRequestDto,
-        httpRequest: HttpServletRequest
+        @RequestHeader("X-API-Key") apiKey: String,
+        httpRequest: HttpServletRequest,
     ): ResponseEntity<AuthResponseDto> {
+        if (!isValidApiKey(apiKey)) {
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid API Key")
+        }
+
         val clientId = getClientId(httpRequest)
 
         if (!rateLimiter.isAllowed(clientId)) {
@@ -35,6 +45,10 @@ class AuthController(
 
         val token = jwtService.generateToken(request.userId)
         return ResponseEntity.ok(AuthResponseDto(token))
+    }
+
+    private fun isValidApiKey(providedKey: String): Boolean {
+        return providedKey == configuredApiKey
     }
 
     private fun getClientId(request: HttpServletRequest): String {
@@ -46,4 +60,3 @@ class AuthController(
         }
     }
 }
-

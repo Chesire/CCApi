@@ -7,7 +7,6 @@ import java.util.concurrent.atomic.AtomicInteger
 
 @Component
 class TokenRateLimiter {
-
     private val requestCounts = ConcurrentHashMap<String, AtomicInteger>()
     private val lastResetTime = ConcurrentHashMap<String, Long>()
 
@@ -28,7 +27,7 @@ class TokenRateLimiter {
         val allowed = newCount <= maxRequests
 
         if (!allowed) {
-            logger.warn("Rate limit exceeded for client: {}, count: {}", clientId, newCount)
+            logger.warn("Rate limit exceeded for client, count: {}", newCount)
         }
 
         return allowed

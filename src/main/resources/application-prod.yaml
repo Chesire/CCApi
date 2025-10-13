@@ -60,6 +60,10 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:3600000}  # Default 1 hour if not specified
 
+capi:
+  auth:
+    api-key: ${CAPI_API_KEY}
+
 server:
   error:
     include-message: never

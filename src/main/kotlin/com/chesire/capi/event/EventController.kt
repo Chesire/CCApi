@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RestController
 @Validated
 @RestController
 @RequestMapping("/api/v1/events")
-class EventController(private val eventService: EventService) {
+class EventController(
+    private val eventService: EventService,
+) {
     @PostMapping
     fun createEvent(
         @Valid @RequestBody data: PostEventDto,

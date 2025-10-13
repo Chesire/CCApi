@@ -24,18 +24,19 @@ class JwtService {
         Keys.hmacShaKeyFor(secretKey.toByteArray())
     }
 
-    fun generateToken(userId: Long): String {
-        return try {
+    fun generateToken(userId: Long): String =
+        try {
             val claims = mutableMapOf<String, Any>(USER_ID to userId)
 
-            val token = Jwts
-                .builder()
-                .claims(claims)
-                .subject(userId.toString())
-                .issuedAt(Date(System.currentTimeMillis()))
-                .expiration(Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(key)
-                .compact()
+            val token =
+                Jwts
+                    .builder()
+                    .claims(claims)
+                    .subject(userId.toString())
+                    .issuedAt(Date(System.currentTimeMillis()))
+                    .expiration(Date(System.currentTimeMillis() + jwtExpiration))
+                    .signWith(key)
+                    .compact()
 
             logger.debug("Successfully generated JWT token for userId={}", userId)
             token
@@ -49,33 +50,30 @@ class JwtService {
             logger.error("Unexpected error generating JWT token for userId={}", userId, ex)
             throw JwtConfigurationException("Token generation system error", ex)
         }
-    }
 
-    fun extractUserId(token: String): Long? {
-        return try {
+    fun extractUserId(token: String): Long? =
+        try {
             val claims = extractAllClaims(token)
             claims[USER_ID]?.toString()?.toLongOrNull()
         } catch (ex: Exception) {
             null
         }
-    }
 
-    fun isTokenValid(token: String): Boolean {
-        return try {
+    fun isTokenValid(token: String): Boolean =
+        try {
             extractAllClaims(token)
             true
         } catch (ex: Exception) {
             false
         }
-    }
 
-    private fun extractAllClaims(token: String): Claims {
-        return Jwts.parser()
+    private fun extractAllClaims(token: String): Claims =
+        Jwts
+            .parser()
             .verifyWith(key)
             .build()
             .parseSignedClaims(token)
             .payload
-    }
 
     companion object {
         const val USER_ID = "userId"

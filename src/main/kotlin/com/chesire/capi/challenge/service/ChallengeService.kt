@@ -8,7 +8,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
-class ChallengeService(private val repository: ChallengeRepository) {
+class ChallengeService(
+    private val repository: ChallengeRepository,
+) {
     fun getChallenges(userId: Long): GetChallengesResult {
         logger.debug("Starting getChallenges for userId={}", userId)
         val startTime = System.currentTimeMillis()
@@ -227,7 +229,9 @@ class ChallengeService(private val repository: ChallengeRepository) {
 }
 
 sealed interface GetChallengesResult {
-    data class Success(val challenges: List<ChallengeDto>) : GetChallengesResult
+    data class Success(
+        val challenges: List<ChallengeDto>,
+    ) : GetChallengesResult
 
     object NotFound : GetChallengesResult
 
@@ -235,7 +239,9 @@ sealed interface GetChallengesResult {
 }
 
 sealed interface GetChallengeResult {
-    data class Success(val challenge: ChallengeDto) : GetChallengeResult
+    data class Success(
+        val challenge: ChallengeDto,
+    ) : GetChallengeResult
 
     object NotFound : GetChallengeResult
 
@@ -243,7 +249,9 @@ sealed interface GetChallengeResult {
 }
 
 sealed interface PostChallengeResult {
-    data class Success(val challenge: ChallengeDto) : PostChallengeResult
+    data class Success(
+        val challenge: ChallengeDto,
+    ) : PostChallengeResult
 
     object InvalidData : PostChallengeResult
 

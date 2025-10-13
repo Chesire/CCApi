@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
 @Service
-class EventService(private val repository: EventRepository) {
+class EventService(
+    private val repository: EventRepository,
+) {
     fun createEvent(data: PostEventDto): CreateEventResult {
         logger.info("Starting event creation: key='{}'", data.key)
         val startTime = System.currentTimeMillis()
@@ -83,22 +85,20 @@ class EventService(private val repository: EventRepository) {
         }
     }
 
-    private fun PostEventDto.toEntity(): EventEntity {
-        return EventEntity(
+    private fun PostEventDto.toEntity(): EventEntity =
+        EventEntity(
             eventKey = key,
             eventValue = value,
             userId = userId,
         )
-    }
 
-    private fun EventEntity.toDto(): EventDto {
-        return EventDto(
+    private fun EventEntity.toDto(): EventDto =
+        EventDto(
             key = eventKey,
             value = eventValue,
             userId = userId,
             timestamp = createdAt ?: LocalDateTime.now(),
         )
-    }
 
     companion object {
         private val logger = LoggerFactory.getLogger(EventService::class.java)
@@ -106,13 +106,17 @@ class EventService(private val repository: EventRepository) {
 }
 
 sealed interface CreateEventResult {
-    data class Success(val event: EventDto) : CreateEventResult
+    data class Success(
+        val event: EventDto,
+    ) : CreateEventResult
 
     object UnknownError : CreateEventResult
 }
 
 sealed interface GetEventsResult {
-    data class Success(val events: List<EventDto>) : GetEventsResult
+    data class Success(
+        val events: List<EventDto>,
+    ) : GetEventsResult
 
     object UnknownError : GetEventsResult
 }

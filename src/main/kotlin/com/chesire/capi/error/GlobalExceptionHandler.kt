@@ -91,7 +91,7 @@ class GlobalExceptionHandler {
 
         val errorResponse = ErrorResponse(
             message = "Authentication service temporarily unavailable",
-            details = "Please try again later or contact support if the problem persists"
+            details = "Please try again later or contact support if the problem persists",
         )
         return ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
     }
@@ -102,7 +102,7 @@ class GlobalExceptionHandler {
 
         val errorResponse = ErrorResponse(
             message = "Token generation failed",
-            details = "Invalid request parameters for authentication"
+            details = "Invalid request parameters for authentication",
         )
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
     }
@@ -113,7 +113,7 @@ class GlobalExceptionHandler {
 
         val errorResponse = ErrorResponse(
             message = "Too many requests",
-            details = "Rate limit exceeded. Please try again later."
+            details = "Rate limit exceeded. Please try again later.",
         )
         return ResponseEntity(errorResponse, HttpStatus.TOO_MANY_REQUESTS)
     }

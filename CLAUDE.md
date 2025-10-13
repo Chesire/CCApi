@@ -5,7 +5,8 @@ This file contains instructions and context for AI assistants working on this pr
 ## Project Overview
 
 **Project Name:** CCApi  
-**Description:** A backend service to handle the CCBot interactions  
+**Description:** A backend service to handle the CCBot interactions - called exclusively from a Discord bot  
+**Client Architecture:** Discord bot → CCApi backend service  
 **Tech Stack:** Kotlin, Spring Boot, Gradle, PostgreSQL, H2 (dev)  
 **Database:** Neon (PostgreSQL for production)
 
@@ -23,6 +24,8 @@ This file contains instructions and context for AI assistants working on this pr
 - When suggesting a new sdk, try to suggest ones that are industry standard, instead of what is easier for development
 - When asked a question about the codebase, just answer it directly, do not try to edit any files unless explicitly
   asked to do so
+- When generating code, always explain what is going done first, and then show smaller snippets of code, instead of
+  dumping large files all at once.
 
 ## Development Standards
 
@@ -30,6 +33,8 @@ This file contains instructions and context for AI assistants working on this pr
 
 - Follow Kotlin coding conventions
 - Use ktlint for code formatting (configured in build.gradle.kts)
+- **DO NOT run ktlintFormat automatically** - let the user call it when they want to format code
+- If ktlint reports warnings during builds, inform the user but ignore them and continue
 - Maintain existing code structure and patterns
 - Add meaningful validation messages and error handling
 
