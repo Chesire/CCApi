@@ -10,6 +10,7 @@ import com.chesire.capi.challenge.service.PostChallengeResult
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Positive
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
@@ -115,10 +116,11 @@ class ChallengeController(
     @DeleteMapping("/{challengeId}")
     fun deleteChallenge(
         @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long,
+        authentication: Authentication,
     ): ResponseEntity<Void> {
-        // TODO: Need to pass the users token to validate they can delete this challenge
-        logger.info("Deleting challenge with challengeId={}", challengeId)
-        return when (challengeService.deleteChallenge(challengeId)) {
+        val userId = authentication.principal as Long
+        logger.info("Deleting challenge challengeId={} for userId={}", challengeId, userId)
+        return when (challengeService.deleteChallenge(challengeId, userId)) {
             DeleteChallengeResult.Success -> {
                 logger.info("Successfully deleted challenge with challengeId={}", challengeId)
                 ResponseEntity.noContent().build()
@@ -127,6 +129,11 @@ class ChallengeController(
             DeleteChallengeResult.NotFound -> {
                 logger.warn("Challenge not found when trying to delete challenge with challengeId={}", challengeId)
                 ResponseEntity.noContent().build()
+            }
+
+            DeleteChallengeResult.Unauthorized -> {
+                logger.warn("Unauthorized attempt to delete challenge with challengeId={}", challengeId)
+                ResponseEntity.status(HttpStatus.FORBIDDEN).build()
             }
 
             DeleteChallengeResult.UnknownError -> {

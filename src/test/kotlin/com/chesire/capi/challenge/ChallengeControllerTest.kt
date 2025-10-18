@@ -276,8 +276,9 @@ class ChallengeControllerTest {
     @DisplayName("Should delete challenge successfully")
     fun shouldDeleteChallengeSuccessfully() {
         val challengeId = 1L
+        val userId = 0L
 
-        `when`(challengeService.deleteChallenge(challengeId))
+        `when`(challengeService.deleteChallenge(challengeId, userId))
             .thenReturn(DeleteChallengeResult.Success)
 
         mockMvc
@@ -289,8 +290,9 @@ class ChallengeControllerTest {
     @DisplayName("Should return no content when challenge to delete not found")
     fun shouldReturnNoContentWhenChallengeToDeleteNotFound() {
         val challengeId = 999L
+        val userId = 0L
 
-        `when`(challengeService.deleteChallenge(challengeId))
+        `when`(challengeService.deleteChallenge(challengeId, userId))
             .thenReturn(DeleteChallengeResult.NotFound)
 
         mockMvc
@@ -299,11 +301,26 @@ class ChallengeControllerTest {
     }
 
     @Test
+    @DisplayName("Should return forbidden when user is not authorized to delete challenge")
+    fun shouldReturnForbiddenWhenUserNotAuthorizedToDeleteChallenge() {
+        val challengeId = 1L
+        val userId = 0L
+
+        `when`(challengeService.deleteChallenge(challengeId, userId))
+            .thenReturn(DeleteChallengeResult.Unauthorized)
+
+        mockMvc
+            .perform(delete("/api/v1/challenges/{challengeId}", challengeId))
+            .andExpect(status().isForbidden())
+    }
+
+    @Test
     @DisplayName("Should return internal server error on unknown error for delete challenge")
     fun shouldReturnInternalServerErrorOnUnknownErrorForDeleteChallenge() {
         val challengeId = 1L
+        val userId = 0L
 
-        `when`(challengeService.deleteChallenge(challengeId))
+        `when`(challengeService.deleteChallenge(challengeId, userId))
             .thenReturn(DeleteChallengeResult.UnknownError)
 
         mockMvc
