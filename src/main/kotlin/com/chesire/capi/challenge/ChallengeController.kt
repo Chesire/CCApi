@@ -10,6 +10,7 @@ import com.chesire.capi.challenge.service.PostChallengeResult
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Positive
 import org.slf4j.LoggerFactory
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.validation.annotation.Validated
@@ -77,7 +78,7 @@ class ChallengeController(
         }
     }
 
-    @PostMapping
+    @PostMapping(consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun createChallenge(
         @Valid @RequestBody data: PostChallengeDto,
         authentication: Authentication,

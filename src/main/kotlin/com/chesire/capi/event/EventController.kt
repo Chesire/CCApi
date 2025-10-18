@@ -8,6 +8,7 @@ import com.chesire.capi.event.service.GetEventsResult
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Size
 import org.slf4j.LoggerFactory
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 class EventController(
     private val eventService: EventService,
 ) {
-    @PostMapping
+    @PostMapping(consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun createEvent(
         @Valid @RequestBody data: PostEventDto,
     ): ResponseEntity<EventDto> {
