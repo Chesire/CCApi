@@ -6,6 +6,7 @@ import com.chesire.capi.config.JwtService
 import com.chesire.capi.config.TokenRateLimiter
 import com.chesire.capi.error.TokenRateLimitException
 import jakarta.validation.Valid
+import jakarta.validation.constraints.Size
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
@@ -31,7 +32,9 @@ class AuthController(
     @PostMapping("/token")
     fun generateToken(
         @Valid @RequestBody request: AuthRequestDto,
-        @RequestHeader("X-API-Key") apiKey: String,
+        @RequestHeader("X-API-Key")
+        @Size(min = 20, max = 100, message = "Invalid API key format")
+        apiKey: String,
     ): ResponseEntity<AuthResponseDto> {
         if (!isValidApiKey(apiKey)) {
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid API Key")
