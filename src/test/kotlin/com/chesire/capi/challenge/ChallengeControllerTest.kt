@@ -72,7 +72,7 @@ class ChallengeControllerTest {
         val challengeId = 1L
         val expectedChallenge = createValidChallengeDto()
 
-        `when`(challengeService.getChallenge(challengeId))
+        `when`(challengeService.getChallenge(challengeId, 1L))
             .thenReturn(GetChallengeResult.Success(expectedChallenge))
 
         val result = mockMvc.perform(get("/api/v1/challenges/{challengeId}", challengeId))
@@ -93,7 +93,7 @@ class ChallengeControllerTest {
     fun shouldReturnNoContentWhenChallengeNotFound() {
         val challengeId = 999L
 
-        `when`(challengeService.getChallenge(challengeId))
+        `when`(challengeService.getChallenge(challengeId, 1L))
             .thenReturn(GetChallengeResult.NotFound)
 
         mockMvc
@@ -106,7 +106,7 @@ class ChallengeControllerTest {
     fun shouldReturnInternalServerErrorOnUnknownError() {
         val challengeId = 1L
 
-        `when`(challengeService.getChallenge(challengeId))
+        `when`(challengeService.getChallenge(challengeId, 1L))
             .thenReturn(GetChallengeResult.UnknownError)
 
         mockMvc
@@ -140,7 +140,7 @@ class ChallengeControllerTest {
                 createValidChallengeDto(id = 2L, name = "Challenge 2", timeFrame = TimeFrame.WEEKLY, allowPauses = false, cheats = 0),
             )
 
-        `when`(challengeService.getChallenges(userId))
+        `when`(challengeService.getChallenges(userId, 1L))
             .thenReturn(GetChallengesResult.Success(challenges))
 
         mockMvc
@@ -163,7 +163,7 @@ class ChallengeControllerTest {
     fun shouldReturnNoContentWhenUserHasNoChallenges() {
         val userId = 1L
 
-        `when`(challengeService.getChallenges(userId))
+        `when`(challengeService.getChallenges(userId, 1L))
             .thenReturn(GetChallengesResult.NotFound)
 
         mockMvc
@@ -176,7 +176,7 @@ class ChallengeControllerTest {
     fun shouldReturnInternalServerErrorOnUnknownErrorForUserChallenges() {
         val userId = 1L
 
-        `when`(challengeService.getChallenges(userId))
+        `when`(challengeService.getChallenges(userId, 1L))
             .thenReturn(GetChallengesResult.UnknownError)
 
         mockMvc
@@ -206,7 +206,7 @@ class ChallengeControllerTest {
         val postDto = createValidPostChallengeDto()
         val createdChallenge = createValidChallengeDto()
 
-        `when`(challengeService.addChallenge(postDto, 0L))
+        `when`(challengeService.addChallenge(postDto, 0L, 1L))
             .thenReturn(PostChallengeResult.Success(createdChallenge))
 
         mockMvc
@@ -229,7 +229,7 @@ class ChallengeControllerTest {
     fun shouldReturnBadRequestOnInvalidDataResponseFromService() {
         val postDto = createValidPostChallengeDto()
 
-        `when`(challengeService.addChallenge(postDto, 0L))
+        `when`(challengeService.addChallenge(postDto, 0L, 1L))
             .thenReturn(PostChallengeResult.InvalidData)
 
         mockMvc
@@ -245,7 +245,7 @@ class ChallengeControllerTest {
     fun shouldReturnNoContentOnNotFoundResponseFromService() {
         val postDto = createValidPostChallengeDto()
 
-        `when`(challengeService.addChallenge(postDto, 0L))
+        `when`(challengeService.addChallenge(postDto, 0L, 1L))
             .thenReturn(PostChallengeResult.NotFound)
 
         mockMvc
@@ -261,7 +261,7 @@ class ChallengeControllerTest {
     fun shouldReturnInternalServerErrorOnUnknownErrorForCreateChallenge() {
         val postDto = createValidPostChallengeDto()
 
-        `when`(challengeService.addChallenge(postDto, 0L))
+        `when`(challengeService.addChallenge(postDto, 0L, 1L))
             .thenReturn(PostChallengeResult.UnknownError)
 
         mockMvc
@@ -278,7 +278,7 @@ class ChallengeControllerTest {
         val challengeId = 1L
         val userId = 0L
 
-        `when`(challengeService.deleteChallenge(challengeId, userId))
+        `when`(challengeService.deleteChallenge(challengeId, userId, 1L))
             .thenReturn(DeleteChallengeResult.Success)
 
         mockMvc
@@ -292,7 +292,7 @@ class ChallengeControllerTest {
         val challengeId = 999L
         val userId = 0L
 
-        `when`(challengeService.deleteChallenge(challengeId, userId))
+        `when`(challengeService.deleteChallenge(challengeId, userId, 1L))
             .thenReturn(DeleteChallengeResult.NotFound)
 
         mockMvc
@@ -306,7 +306,7 @@ class ChallengeControllerTest {
         val challengeId = 1L
         val userId = 0L
 
-        `when`(challengeService.deleteChallenge(challengeId, userId))
+        `when`(challengeService.deleteChallenge(challengeId, userId, 1L))
             .thenReturn(DeleteChallengeResult.Unauthorized)
 
         mockMvc
@@ -320,7 +320,7 @@ class ChallengeControllerTest {
         val challengeId = 1L
         val userId = 0L
 
-        `when`(challengeService.deleteChallenge(challengeId, userId))
+        `when`(challengeService.deleteChallenge(challengeId, userId, 1L))
             .thenReturn(DeleteChallengeResult.UnknownError)
 
         mockMvc
