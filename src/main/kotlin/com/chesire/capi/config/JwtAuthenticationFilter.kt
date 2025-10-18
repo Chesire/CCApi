@@ -3,7 +3,6 @@ package com.chesire.capi.config
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
@@ -26,15 +25,14 @@ class JwtAuthenticationFilter(
 
         val jwt = authHeader.substring(7) // Remove "Bearer " prefix
         val userId = jwtService.extractUserId(jwt)
+        val guildId = jwtService.extractGuildId(jwt)
 
-        if (userId != null && SecurityContextHolder.getContext().authentication == null) {
+        if (userId != null && guildId != null && SecurityContextHolder.getContext().authentication == null) {
             if (jwtService.isTokenValid(jwt)) {
-                val authToken =
-                    UsernamePasswordAuthenticationToken(
-                        userId,
-                        null,
-                        emptyList(),
-                    )
+                val authToken = JwtAuthentication(
+                    userId = userId,
+                    guildId = guildId
+                )
                 authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
                 SecurityContextHolder.getContext().authentication = authToken
             }
