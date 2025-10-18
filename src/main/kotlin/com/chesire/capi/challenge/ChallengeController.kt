@@ -8,7 +8,6 @@ import com.chesire.capi.challenge.service.GetChallengeResult
 import com.chesire.capi.challenge.service.GetChallengesResult
 import com.chesire.capi.challenge.service.PostChallengeResult
 import com.chesire.capi.config.jwt.JwtAuthentication
-import com.chesire.capi.config.jwt.JwtService
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Positive
 import org.slf4j.LoggerFactory
@@ -86,9 +85,12 @@ class ChallengeController(
         @Valid @RequestBody data: PostChallengeDto,
         authentication: Authentication,
     ): ResponseEntity<ChallengeDto> {
-        val userId = authentication.principal as Long
-        logger.info("Creating challenge for userId={}, with name={}", userId, data.name)
-        return when (val result = challengeService.addChallenge(data, userId)) {
+        val auth = authentication as JwtAuthentication
+        val userId = auth.userId
+        val guildId = auth.guildId
+
+        logger.info("Creating challenge for userId={} guildId={}, with name={}", userId, guildId, data.name)
+        return when (val result = challengeService.addChallenge(data, userId, guildId)) {
             is PostChallengeResult.Success -> {
                 logger.info(
                     "Successfully created challenge with id={}, name={}",
@@ -120,9 +122,12 @@ class ChallengeController(
         @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long,
         authentication: Authentication,
     ): ResponseEntity<Void> {
-        val userId = authentication.principal as Long
-        logger.info("Deleting challenge challengeId={} for userId={}", challengeId, userId)
-        return when (challengeService.deleteChallenge(challengeId, userId)) {
+        val auth = authentication as JwtAuthentication
+        val userId = auth.userId
+        val guildId = auth.guildId
+
+        logger.info("Deleting challenge challengeId={} for userId={} guildId={}", challengeId, userId, guildId)
+        return when (challengeService.deleteChallenge(challengeId, userId, guildId)) {
             DeleteChallengeResult.Success -> {
                 logger.info("Successfully deleted challenge with challengeId={}", challengeId)
                 ResponseEntity.noContent().build()

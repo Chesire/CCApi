@@ -100,17 +100,19 @@ class ChallengeService(
     fun addChallenge(
         data: PostChallengeDto,
         userId: Long,
+        guildId: Long
     ): PostChallengeResult {
         logger.info(
-            "Starting challenge creation: name='{}', timeFrame={}, userId={}",
+            "Starting challenge creation: name='{}', timeFrame={}, userId={}, guildId={}",
             data.name,
             data.timeFrame,
             userId,
+            guildId
         )
         val startTime = System.currentTimeMillis()
 
         return try {
-            val entity = data.toEntity(userId)
+            val entity = data.toEntity(userId, guildId)
             logger.debug(
                 "Created challenge entity: name='{}', description='{}', allowPauses={}, cheats={}",
                 entity.name,
@@ -137,9 +139,10 @@ class ChallengeService(
         } catch (ex: Exception) {
             val totalTime = System.currentTimeMillis() - startTime
             logger.error(
-                "Error creating challenge '{}' for userId={} after {}ms: {} - {}",
+                "Error creating challenge '{}' for userId={} guildId={} after {}ms: {} - {}",
                 data.name,
                 userId,
+                guildId,
                 totalTime,
                 ex.javaClass.simpleName,
                 ex.message,
@@ -149,8 +152,8 @@ class ChallengeService(
         }
     }
 
-    fun deleteChallenge(challengeId: Long, userId: Long): DeleteChallengeResult {
-        logger.info("Starting challenge deletion: challengeId={} userId={}", challengeId, userId)
+    fun deleteChallenge(challengeId: Long, userId: Long, guildId: Long): DeleteChallengeResult {
+        logger.info("Starting challenge deletion: challengeId={} userId={} guildId={}", challengeId, userId, guildId)
         val startTime = System.currentTimeMillis()
 
         return try {
@@ -163,13 +166,15 @@ class ChallengeService(
                     totalTime,
                 )
                 DeleteChallengeResult.NotFound
-            } else if (currentChallenge.userId != userId) {
+            } else if (currentChallenge.userId != userId || currentChallenge.guildId != guildId) {
                 val totalTime = System.currentTimeMillis() - startTime
                 logger.warn(
-                    "Unauthorized deletion attempt: challengeId={} belongs to userId={}, attempted by userId={} (total time {}ms)",
+                    "Unauthorized deletion attempt: challengeId={} belongs to userId={} guildId={}, attempted by userId={} guildId={} (total time {}ms)",
                     challengeId,
                     currentChallenge.userId,
+                    currentChallenge.guildId,
                     userId,
+                    guildId,
                     totalTime
                 )
                 DeleteChallengeResult.Unauthorized
@@ -212,9 +217,10 @@ class ChallengeService(
         return entity
     }
 
-    private fun PostChallengeDto.toEntity(userId: Long) =
+    private fun PostChallengeDto.toEntity(userId: Long, guildId: Long) =
         ChallengeEntity(
             userId = userId,
+            guildId = guildId,
             name = name,
             description = description,
             timeFrame = timeFrame,
