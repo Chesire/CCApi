@@ -1,0 +1,208 @@
+package com.chesire.capi.auth
+
+import com.chesire.capi.auth.dto.AuthRequestDto
+import com.chesire.capi.config.JwtService
+import com.chesire.capi.config.TokenRateLimiter
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.whenever
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.MediaType
+import org.springframework.test.context.TestPropertySource
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+
+@WebMvcTest(AuthController::class)
+@TestPropertySource(properties = ["capi.auth.api-key=test-api-key-for-unit-testing"])
+@DisplayName("AuthController Tests")
+class AuthControllerTest {
+
+    @Autowired
+    private lateinit var mockMvc: MockMvc
+
+    @Autowired
+    private lateinit var objectMapper: ObjectMapper
+
+    @MockBean
+    private lateinit var jwtService: JwtService
+
+    @MockBean
+    private lateinit var rateLimiter: TokenRateLimiter
+
+    private fun validAuthRequest() = AuthRequestDto(
+        userId = 123456789012345678L,
+        guildId = 987654321012345678L,
+    )
+
+    @Nested
+    @DisplayName("Successful Authentication Tests")
+    inner class SuccessfulAuthenticationTests {
+        @Test
+        @DisplayName("Should generate token with valid request")
+        fun shouldGenerateTokenWithValidRequest() {
+            val request = validAuthRequest()
+            whenever(rateLimiter.isAllowed(any(), eq(request.userId), eq(request.guildId))).thenReturn(true)
+            whenever(jwtService.generateToken(request.userId, request.guildId)).thenReturn("test.jwt.token")
+
+            mockMvc.perform(
+                post("/api/v1/auth/token")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("X-API-Key", "test-api-key-for-unit-testing")
+                    .content(objectMapper.writeValueAsString(request)),
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.token").value("test.jwt.token"))
+                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(header().string("Cache-Control", "no-store, no-cache, must-revalidate, private"))
+                .andExpect(header().string("Pragma", "no-cache"))
+                .andExpect(header().string("Expires", "0"))
+        }
+    }
+
+    @Nested
+    @DisplayName("API Key Validation Tests")
+    inner class ApiKeyValidationTests {
+        @Test
+        @DisplayName("Should reject invalid API key")
+        fun shouldRejectInvalidApiKey() {
+            val request = validAuthRequest()
+
+            mockMvc.perform(
+                post("/api/v1/auth/token")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("X-API-Key", "invalid-api-key")
+                    .content(objectMapper.writeValueAsString(request)),
+            )
+                .andExpect(status().isUnauthorized)
+                .andExpect(jsonPath("$.message").value("Authentication failed"))
+        }
+
+        @Test
+        @DisplayName("Should reject missing API key header")
+        fun shouldRejectMissingApiKeyHeader() {
+            val request = validAuthRequest()
+
+            mockMvc.perform(
+                post("/api/v1/auth/token")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)),
+            )
+                .andExpect(status().isBadRequest)
+        }
+
+        @Test
+        @DisplayName("Should reject API key too short")
+        fun shouldRejectApiKeyTooShort() {
+            val request = validAuthRequest()
+
+            mockMvc.perform(
+                post("/api/v1/auth/token")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("X-API-Key", "short")
+                    .content(objectMapper.writeValueAsString(request)),
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.message").value("Invalid request parameters"))
+                .andExpect(jsonPath("$.errors[0].rejectedValue").value("[REDACTED]"))
+        }
+
+        @Test
+        @DisplayName("Should reject API key too long")
+        fun shouldRejectApiKeyTooLong() {
+            val request = validAuthRequest()
+            val longApiKey = "a".repeat(150)
+
+            mockMvc.perform(
+                post("/api/v1/auth/token")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("X-API-Key", longApiKey)
+                    .content(objectMapper.writeValueAsString(request)),
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.message").value("Invalid request parameters"))
+        }
+    }
+
+    @Nested
+    @DisplayName("Rate Limiting Tests")
+    inner class RateLimitingTests {
+        @Test
+        @DisplayName("Should reject request when rate limited")
+        fun shouldRejectRequestWhenRateLimited() {
+            val request = validAuthRequest()
+            whenever(rateLimiter.isAllowed(any(), eq(request.userId), eq(request.guildId))).thenReturn(false)
+
+            mockMvc.perform(
+                post("/api/v1/auth/token")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("X-API-Key", "test-api-key-for-unit-testing")
+                    .content(objectMapper.writeValueAsString(request)),
+            )
+                .andExpect(status().isTooManyRequests)
+                .andExpect(jsonPath("$.message").value("Too many requests"))
+        }
+    }
+
+    @Nested
+    @DisplayName("Input Validation Tests")
+    inner class InputValidationTests {
+        @Test
+        @DisplayName("Should reject invalid user ID")
+        fun shouldRejectInvalidUserId() {
+            val request = validAuthRequest().copy(userId = 123L)
+
+            mockMvc.perform(
+                post("/api/v1/auth/token")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("X-API-Key", "test-api-key-for-unit-testing")
+                    .content(objectMapper.writeValueAsString(request)),
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.errors[0].field").value("userId"))
+        }
+
+        @Test
+        @DisplayName("Should reject invalid guild ID")
+        fun shouldRejectInvalidGuildId() {
+            val request = validAuthRequest().copy(guildId = 456L)
+
+            mockMvc.perform(
+                post("/api/v1/auth/token")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("X-API-Key", "test-api-key-for-unit-testing")
+                    .content(objectMapper.writeValueAsString(request)),
+            )
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.errors[0].field").value("guildId"))
+        }
+    }
+
+    @Nested
+    @DisplayName("Content Type Tests")
+    inner class ContentTypeTests {
+        @Test
+        @DisplayName("Should reject non-JSON content type")
+        fun shouldRejectNonJsonContentType() {
+            val request = validAuthRequest()
+
+            mockMvc.perform(
+                post("/api/v1/auth/token")
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .header("X-API-Key", "test-api-key-for-unit-testing")
+                    .content("plain text content"),
+            )
+                .andExpect(status().is4xxClientError)
+        }
+    }
+}
