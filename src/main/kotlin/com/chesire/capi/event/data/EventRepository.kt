@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface EventRepository : JpaRepository<EventEntity, Long> {
-    fun findByEventKey(eventKey: String): List<EventEntity>
+    fun findByEventKeyAndGuildId(eventKey: String, guildId: Long): List<EventEntity>
 }

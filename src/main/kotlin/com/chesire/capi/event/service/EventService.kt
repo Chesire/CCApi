@@ -4,20 +4,20 @@ import com.chesire.capi.event.data.EventEntity
 import com.chesire.capi.event.data.EventRepository
 import com.chesire.capi.event.dto.EventDto
 import com.chesire.capi.event.dto.PostEventDto
+import java.time.LocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
 
 @Service
 class EventService(
     private val repository: EventRepository,
 ) {
-    fun createEvent(data: PostEventDto): CreateEventResult {
+    fun createEvent(data: PostEventDto, guildId: Long): CreateEventResult {
         logger.info("Starting event creation: key='{}'", data.key)
         val startTime = System.currentTimeMillis()
 
         return try {
-            val entity = data.toEntity()
+            val entity = data.toEntity(guildId)
             val saveStartTime = System.currentTimeMillis()
             val result = repository.save(entity)
             val saveTime = System.currentTimeMillis() - saveStartTime
@@ -25,7 +25,12 @@ class EventService(
 
             val dto = result.toDto()
             val totalTime = System.currentTimeMillis() - startTime
-            logger.info("Successfully created event: eventId={}, key='{}' in {}ms", result.id, result.eventKey, totalTime)
+            logger.info(
+                "Successfully created event: eventId={}, key='{}' in {}ms",
+                result.id,
+                result.eventKey,
+                totalTime
+            )
 
             CreateEventResult.Success(dto)
         } catch (ex: Exception) {
@@ -42,12 +47,12 @@ class EventService(
         }
     }
 
-    fun getEventsByKey(key: String): GetEventsResult {
+    fun getEventsByKey(key: String, guildId: Long): GetEventsResult {
         logger.debug("Starting getEventsByKey for key='{}'", key)
         val startTime = System.currentTimeMillis()
 
         return try {
-            val events = repository.findByEventKey(key)
+            val events = repository.findByEventKeyAndGuildId(key, guildId)
             val queryTime = System.currentTimeMillis() - startTime
             logger.debug("Database query completed in {}ms, found {} events", queryTime, events.size)
 
@@ -70,11 +75,12 @@ class EventService(
         }
     }
 
-    private fun PostEventDto.toEntity(): EventEntity =
+    private fun PostEventDto.toEntity(guildId: Long): EventEntity =
         EventEntity(
             eventKey = key,
             eventValue = value,
             userId = userId,
+            guildId = guildId
         )
 
     private fun EventEntity.toDto(): EventDto =
