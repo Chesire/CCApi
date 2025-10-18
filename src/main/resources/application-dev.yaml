@@ -32,7 +32,7 @@ jwt:
 
 capi:
   auth:
-    api-key: ${CAPI_API_KEY:dev-default-api-key}
+    api-key: ${CAPI_API_KEY:dev-default-api-key-extended}
 
 management:
   endpoints:
