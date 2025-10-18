@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.Date
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.crypto.SecretKey
 
@@ -28,17 +29,23 @@ class JwtService {
 
     fun generateToken(userId: Long, guildId: Long): String =
         try {
-            val claims = mutableMapOf<String, Any>(USER_ID to userId, GUILD_ID to guildId)
+            val claims = mutableMapOf<String, Any>(
+                USER_ID to userId,
+                GUILD_ID to guildId,
+                SCOPE to SCOPE_VALUE,
+                Claims.ISSUER to ISSUER,
+                Claims.AUDIENCE to AUDIENCE,
+                Claims.ID to UUID.randomUUID().toString()
+            )
 
-            val token =
-                Jwts
-                    .builder()
-                    .claims(claims)
-                    .subject(userId.toString())
-                    .issuedAt(Date(System.currentTimeMillis()))
-                    .expiration(Date(System.currentTimeMillis() + jwtExpiration))
-                    .signWith(key)
-                    .compact()
+            val token = Jwts
+                .builder()
+                .claims(claims)
+                .subject("bot-user-$userId")
+                .issuedAt(Date(System.currentTimeMillis()))
+                .expiration(Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(key)
+                .compact()
 
             logger.debug("Successfully generated JWT token for userId={}, guildId={}", userId, guildId)
             token
@@ -85,6 +92,11 @@ class JwtService {
     companion object {
         const val USER_ID = "userId"
         const val GUILD_ID = "guildId"
+        const val SCOPE = "scope"
+        const val SCOPE_VALUE = "bot:discord:user"
+        const val ISSUER = "capi-auth-service"
+        const val AUDIENCE = "capi-api"
+
         private val logger = LoggerFactory.getLogger(JwtService::class.java)
     }
 }
