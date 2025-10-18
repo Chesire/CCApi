@@ -38,25 +38,20 @@ class ChallengeController(
         val auth = authentication as JwtAuthentication
         val guildId = auth.guildId
 
-        logger.info("Fetching challenges for userId={}, guildId={}", userId, guildId)
+        logger.info("Fetching challenges for user")
         return when (val result = challengeService.getChallenges(userId, guildId)) {
             is GetChallengesResult.Success -> {
-                logger.info(
-                    "Successfully fetched {} challenges for userId={} guildId={}",
-                    result.challenges.size,
-                    userId,
-                    guildId
-                )
+                logger.info("Successfully fetched {} challenges", result.challenges.size)
                 ResponseEntity.ok(result.challenges)
             }
 
             GetChallengesResult.NotFound -> {
-                logger.info("No challenges found for userId={} guildId={}", userId, guildId)
+                logger.info("No challenges found for user")
                 ResponseEntity.noContent().build()
             }
 
             GetChallengesResult.UnknownError -> {
-                logger.error("Unknown error fetching challenges for userId={} guildId={}", userId, guildId)
+                logger.error("Unknown error fetching challenges")
                 ResponseEntity.internalServerError().build()
             }
         }
@@ -70,29 +65,25 @@ class ChallengeController(
         val auth = authentication as JwtAuthentication
         val guildId = auth.guildId
 
-        logger.info("Fetching challenge for challengeId={} guildId={}", challengeId, guildId)
+        logger.info("Fetching challenge for challengeId={}", challengeId)
         return when (val result = challengeService.getChallenge(challengeId, guildId)) {
             is GetChallengeResult.Success -> {
-                logger.info(
-                    "Successfully fetched challenge for challengeId={}, name={}",
-                    challengeId,
-                    result.challenge.name,
-                )
+                logger.info("Successfully fetched challenge: {}", result.challenge.name)
                 ResponseEntity.ok(result.challenge)
             }
 
             GetChallengeResult.NotFound -> {
-                logger.info("Challenge not found for challengeId={}", challengeId)
+                logger.info("Challenge not found: challengeId={}", challengeId)
                 ResponseEntity.noContent().build()
             }
 
             GetChallengeResult.Unauthorized -> {
-                logger.warn("Unauthorized attempt to fetch challenge for challengeId={}", challengeId)
+                logger.warn("Unauthorized attempt to fetch challenge: challengeId={}", challengeId)
                 ResponseEntity.status(HttpStatus.FORBIDDEN).build()
             }
 
             GetChallengeResult.UnknownError -> {
-                logger.error("Unknown error fetching challenge for challengeId={}", challengeId)
+                logger.error("Unknown error fetching challenge: challengeId={}", challengeId)
                 ResponseEntity.internalServerError().build()
             }
         }
@@ -107,29 +98,25 @@ class ChallengeController(
         val userId = auth.userId
         val guildId = auth.guildId
 
-        logger.info("Creating challenge for userId={} guildId={}, with name={}", userId, guildId, data.name)
+        logger.info("Creating challenge: {}", data.name)
         return when (val result = challengeService.addChallenge(data, userId, guildId)) {
             is PostChallengeResult.Success -> {
-                logger.info(
-                    "Successfully created challenge with id={}, name={}",
-                    result.challenge.id,
-                    result.challenge.name,
-                )
+                logger.info("Successfully created challenge: id={}, name={}", result.challenge.id, result.challenge.name)
                 ResponseEntity.ok(result.challenge)
             }
 
             PostChallengeResult.InvalidData -> {
-                logger.warn("Invalid data provided when trying to create challenge with name={}", data.name)
+                logger.warn("Invalid data provided when creating challenge: {}", data.name)
                 ResponseEntity.badRequest().build()
             }
 
             PostChallengeResult.NotFound -> {
-                logger.warn("Related entity not found when trying to create challenge with name={}", data.name)
+                logger.warn("Related entity not found when creating challenge: {}", data.name)
                 ResponseEntity.noContent().build()
             }
 
             PostChallengeResult.UnknownError -> {
-                logger.error("Unknown error creating challenge with name={}", data.name)
+                logger.error("Unknown error creating challenge: {}", data.name)
                 ResponseEntity.internalServerError().build()
             }
         }
@@ -144,25 +131,25 @@ class ChallengeController(
         val userId = auth.userId
         val guildId = auth.guildId
 
-        logger.info("Deleting challenge challengeId={} for userId={} guildId={}", challengeId, userId, guildId)
+        logger.info("Deleting challenge: {}", challengeId)
         return when (challengeService.deleteChallenge(challengeId, userId, guildId)) {
             DeleteChallengeResult.Success -> {
-                logger.info("Successfully deleted challenge with challengeId={}", challengeId)
+                logger.info("Successfully deleted challenge: {}", challengeId)
                 ResponseEntity.noContent().build()
             }
 
             DeleteChallengeResult.NotFound -> {
-                logger.warn("Challenge not found when trying to delete challenge with challengeId={}", challengeId)
+                logger.warn("Challenge not found for deletion: {}", challengeId)
                 ResponseEntity.noContent().build()
             }
 
             DeleteChallengeResult.Unauthorized -> {
-                logger.warn("Unauthorized attempt to delete challenge with challengeId={}", challengeId)
+                logger.warn("Unauthorized attempt to delete challenge: {}", challengeId)
                 ResponseEntity.status(HttpStatus.FORBIDDEN).build()
             }
 
             DeleteChallengeResult.UnknownError -> {
-                logger.error("Unknown error deleting challenge with challengeId={}", challengeId)
+                logger.error("Unknown error deleting challenge: {}", challengeId)
                 ResponseEntity.internalServerError().build()
             }
         }

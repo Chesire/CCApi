@@ -25,12 +25,7 @@ class EventService(
 
             val dto = result.toDto()
             val totalTime = System.currentTimeMillis() - startTime
-            logger.info(
-                "Successfully created event: eventId={}, key='{}' in {}ms",
-                result.id,
-                result.eventKey,
-                totalTime,
-            )
+            logger.info("Successfully created event: eventId={}, key='{}' in {}ms", result.id, result.eventKey, totalTime)
 
             CreateEventResult.Success(dto)
         } catch (ex: Exception) {
@@ -54,21 +49,11 @@ class EventService(
         return try {
             val events = repository.findByEventKey(key)
             val queryTime = System.currentTimeMillis() - startTime
-            logger.debug(
-                "Database query completed in {}ms for key='{}', found {} events",
-                queryTime,
-                key,
-                events.size,
-            )
+            logger.debug("Database query completed in {}ms, found {} events", queryTime, events.size)
 
             val eventDtos = events.map { it.toDto() }
             val totalTime = System.currentTimeMillis() - startTime
-            logger.info(
-                "Successfully retrieved and mapped {} events for key='{}' in {}ms",
-                eventDtos.size,
-                key,
-                totalTime,
-            )
+            logger.info("Successfully retrieved and mapped {} events in {}ms", eventDtos.size, totalTime)
 
             GetEventsResult.Success(eventDtos)
         } catch (ex: Exception) {

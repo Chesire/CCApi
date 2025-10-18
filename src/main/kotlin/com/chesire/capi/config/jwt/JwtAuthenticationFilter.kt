@@ -3,6 +3,7 @@ package com.chesire.capi.config.jwt
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.slf4j.MDC
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
@@ -27,7 +28,14 @@ class JwtAuthenticationFilter(
         val userId = jwtService.extractUserId(jwt)
         val guildId = jwtService.extractGuildId(jwt)
 
-        if (userId != null && guildId != null && SecurityContextHolder.getContext().authentication == null) {
+        if (
+            userId != null &&
+            guildId != null &&
+            SecurityContextHolder.getContext().authentication == null
+        ) {
+            MDC.put("userId", userId.toString())
+            MDC.put("guildId", guildId.toString())
+
             if (jwtService.isTokenValid(jwt)) {
                 val authToken = JwtAuthentication(
                     userId = userId,

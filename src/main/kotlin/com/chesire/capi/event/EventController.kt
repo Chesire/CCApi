@@ -28,15 +28,15 @@ class EventController(
     fun createEvent(
         @Valid @RequestBody data: PostEventDto,
     ): ResponseEntity<EventDto> {
-        logger.info("Creating event with key={}", data.key)
+        logger.info("Creating event: {}", data.key)
         return when (val result = eventService.createEvent(data)) {
             is CreateEventResult.Success -> {
-                logger.info("Successfully created event with key={}", result.event.key)
+                logger.info("Successfully created event: {}", result.event.key)
                 ResponseEntity.ok(result.event)
             }
 
             CreateEventResult.UnknownError -> {
-                logger.error("Unknown error creating event with key={}", data.key)
+                logger.error("Unknown error creating event: {}", data.key)
                 ResponseEntity.internalServerError().build()
             }
         }
@@ -48,15 +48,15 @@ class EventController(
     ): ResponseEntity<List<EventDto>> {
         // Add pagination at some point
         // Maybe add a from timeframe as well?
-        logger.info("Fetching events for key={}", key)
+        logger.info("Fetching events: {}", key)
         return when (val result = eventService.getEventsByKey(key)) {
             is GetEventsResult.Success -> {
-                logger.info("Successfully fetched {} events for key={}", result.events.size, key)
+                logger.info("Successfully fetched {} events", result.events.size)
                 ResponseEntity.ok(result.events)
             }
 
             GetEventsResult.UnknownError -> {
-                logger.error("Unknown error fetching events for key={}", key)
+                logger.error("Unknown error fetching events: {}", key)
                 ResponseEntity.internalServerError().build()
             }
         }
