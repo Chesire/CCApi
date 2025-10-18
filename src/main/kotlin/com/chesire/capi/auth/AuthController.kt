@@ -2,8 +2,8 @@ package com.chesire.capi.auth
 
 import com.chesire.capi.auth.dto.AuthRequestDto
 import com.chesire.capi.auth.dto.AuthResponseDto
-import com.chesire.capi.config.JwtService
 import com.chesire.capi.config.TokenRateLimiter
+import com.chesire.capi.config.jwt.JwtService
 import com.chesire.capi.error.TokenRateLimitException
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Size

@@ -1,4 +1,4 @@
-package com.chesire.capi.config
+package com.chesire.capi.config.jwt
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 

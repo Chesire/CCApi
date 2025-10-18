@@ -1,4 +1,4 @@
-package com.chesire.capi.config
+package com.chesire.capi.config.jwt
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest

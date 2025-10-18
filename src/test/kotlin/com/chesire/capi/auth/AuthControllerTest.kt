@@ -1,12 +1,11 @@
 package com.chesire.capi.auth
 
 import com.chesire.capi.auth.dto.AuthRequestDto
-import com.chesire.capi.config.JwtService
 import com.chesire.capi.config.TokenRateLimiter
+import com.chesire.capi.config.jwt.JwtService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -55,7 +54,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("Should reject wrong API key value")  
+    @DisplayName("Should reject wrong API key value")
     fun shouldRejectWrongApiKeyValue() {
         val request = AuthRequestDto(
             userId = 123456789012345678L,

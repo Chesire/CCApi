@@ -1,4 +1,4 @@
-package com.chesire.capi.config
+package com.chesire.capi.config.jwt
 
 import com.chesire.capi.error.JwtConfigurationException
 import com.chesire.capi.error.JwtGenerationException
@@ -6,13 +6,13 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.InvalidKeyException
 import io.jsonwebtoken.security.Keys
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.crypto.SecretKey
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
 
 @Service
 class JwtService {

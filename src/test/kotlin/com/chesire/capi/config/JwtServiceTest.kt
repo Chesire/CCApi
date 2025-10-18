@@ -1,15 +1,16 @@
 package com.chesire.capi.config
 
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.springframework.test.util.ReflectionTestUtils
+import com.chesire.capi.config.jwt.JwtService
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.springframework.test.util.ReflectionTestUtils
 
 @DisplayName("JwtService Tests")
 class JwtServiceTest {
