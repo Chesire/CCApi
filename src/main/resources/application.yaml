@@ -3,6 +3,15 @@ spring:
     name: capi
   profiles:
     active: dev
+  servlet:
+    multipart:
+      max-file-size: 1MB
+      max-request-size: 1MB
+
+server:
+  max-http-header-size: 8KB
+  tomcat:
+    max-http-post-size: 1MB
 
 management:
   endpoints:
