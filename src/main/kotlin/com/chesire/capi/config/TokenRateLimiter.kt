@@ -1,10 +1,10 @@
 package com.chesire.capi.config
 
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
 
 @Component
 class TokenRateLimiter {
@@ -15,6 +15,7 @@ class TokenRateLimiter {
     private var userLimitPerHour: Int = 20
     private var apiKeyLimitPerHour: Int = 2000
     private val windowMs = 3600000L // 1 hour
+    private val maxEntries = 10000
 
     fun isAllowed(apiKey: String, userId: Long, guildId: Long): Boolean {
         return isAllowedByApiKey(apiKey) && isAllowedByGuild(guildId) && isAllowedByUser(userId)
@@ -33,6 +34,15 @@ class TokenRateLimiter {
     }
 
     private fun checkLimit(key: String, limit: Int, type: String): Boolean {
+        if (requestCounts.size >= maxEntries) {
+            logger.warn(
+                "Rate limiter memory protection triggered - rejecting request. " +
+                        "Current entries: {}, max: {}, type: {}",
+                requestCounts.size, maxEntries, type
+            )
+            return false
+        }
+
         val now = System.currentTimeMillis()
         val count = requestCounts.computeIfAbsent(key) { AtomicInteger(0) }
         val lastReset = lastResetTime.computeIfAbsent(key) { now }

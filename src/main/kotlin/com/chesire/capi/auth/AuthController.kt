@@ -7,6 +7,7 @@ import com.chesire.capi.config.TokenRateLimiter
 import com.chesire.capi.error.TokenRateLimitException
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Size
+import java.security.MessageDigest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
@@ -62,7 +63,10 @@ class AuthController(
     }
 
     private fun isValidApiKey(providedKey: String): Boolean {
-        val isValid = providedKey == configuredApiKey
+        val isValid = MessageDigest.isEqual(
+            providedKey.toByteArray(Charsets.UTF_8),
+            configuredApiKey.toByteArray(Charsets.UTF_8)
+        )
         if (!isValid) {
             logger.warn(
                 "Authentication failed - invalid API key attempt. Key prefix: {}, Length: {}",
