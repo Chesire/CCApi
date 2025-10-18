@@ -33,21 +33,30 @@ class ChallengeController(
     @GetMapping("/user/{userId}")
     fun getChallengesByUser(
         @PathVariable @Positive(message = "User ID must be positive") userId: Long,
+        authentication: Authentication,
     ): ResponseEntity<List<ChallengeDto>> {
-        logger.info("Fetching challenges for userId={}", userId)
-        return when (val result = challengeService.getChallenges(userId)) {
+        val auth = authentication as JwtAuthentication
+        val guildId = auth.guildId
+
+        logger.info("Fetching challenges for userId={}, guildId={}", userId, guildId)
+        return when (val result = challengeService.getChallenges(userId, guildId)) {
             is GetChallengesResult.Success -> {
-                logger.info("Successfully fetched {} challenges for userId={}", result.challenges.size, userId)
+                logger.info(
+                    "Successfully fetched {} challenges for userId={} guildId={}",
+                    result.challenges.size,
+                    userId,
+                    guildId
+                )
                 ResponseEntity.ok(result.challenges)
             }
 
             GetChallengesResult.NotFound -> {
-                logger.info("No challenges found for userId={}", userId)
+                logger.info("No challenges found for userId={} guildId={}", userId, guildId)
                 ResponseEntity.noContent().build()
             }
 
             GetChallengesResult.UnknownError -> {
-                logger.error("Unknown error fetching challenges for userId={}", userId)
+                logger.error("Unknown error fetching challenges for userId={} guildId={}", userId, guildId)
                 ResponseEntity.internalServerError().build()
             }
         }
@@ -56,9 +65,13 @@ class ChallengeController(
     @GetMapping("/{challengeId}")
     fun getChallengeById(
         @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long,
+        authentication: Authentication,
     ): ResponseEntity<ChallengeDto> {
-        logger.info("Fetching challenge for challengeId={}", challengeId)
-        return when (val result = challengeService.getChallenge(challengeId)) {
+        val auth = authentication as JwtAuthentication
+        val guildId = auth.guildId
+
+        logger.info("Fetching challenge for challengeId={} guildId={}", challengeId, guildId)
+        return when (val result = challengeService.getChallenge(challengeId, guildId)) {
             is GetChallengeResult.Success -> {
                 logger.info(
                     "Successfully fetched challenge for challengeId={}, name={}",
@@ -71,6 +84,11 @@ class ChallengeController(
             GetChallengeResult.NotFound -> {
                 logger.info("Challenge not found for challengeId={}", challengeId)
                 ResponseEntity.noContent().build()
+            }
+
+            GetChallengeResult.Unauthorized -> {
+                logger.warn("Unauthorized attempt to fetch challenge for challengeId={}", challengeId)
+                ResponseEntity.status(HttpStatus.FORBIDDEN).build()
             }
 
             GetChallengeResult.UnknownError -> {

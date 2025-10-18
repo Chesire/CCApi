@@ -11,30 +11,32 @@ import org.springframework.stereotype.Service
 class ChallengeService(
     private val repository: ChallengeRepository,
 ) {
-    fun getChallenges(userId: Long): GetChallengesResult {
-        logger.debug("Starting getChallenges for userId={}", userId)
+    fun getChallenges(userId: Long, guildId: Long): GetChallengesResult {
+        logger.debug("Starting getChallenges for userId={} guildId={}", userId, guildId)
         val startTime = System.currentTimeMillis()
 
         return try {
-            val allForUser = repository.findByUserId(userId)
+            val allForUser = repository.findByUserIdAndGuildId(userId, guildId)
             val queryTime = System.currentTimeMillis() - startTime
             logger.debug(
-                "Database query completed in {}ms for userId={}, found {} challenges",
+                "Database query completed in {}ms for userId={} guildId={}, found {} challenges",
                 queryTime,
                 userId,
+                guildId,
                 allForUser.size,
             )
 
             if (allForUser.isEmpty()) {
-                logger.info("No challenges exist for userId={}", userId)
+                logger.info("No challenges exist for userId={} guildId={}", userId, guildId)
                 GetChallengesResult.NotFound
             } else {
                 val challenges = allForUser.map { it.toChallengeDto() }
                 val totalTime = System.currentTimeMillis() - startTime
                 logger.info(
-                    "Successfully retrieved and mapped {} challenges for userId={} in {}ms",
+                    "Successfully retrieved and mapped {} challenges for userId={} guildId={} in {}ms",
                     challenges.size,
                     userId,
+                    guildId,
                     totalTime,
                 )
 
@@ -43,8 +45,9 @@ class ChallengeService(
         } catch (ex: Exception) {
             val totalTime = System.currentTimeMillis() - startTime
             logger.error(
-                "Error retrieving challenges for userId={} after {}ms: {} - {}",
+                "Error retrieving challenges for userId={} guildId={}, after {}ms: {} - {}",
                 userId,
+                guildId,
                 totalTime,
                 ex.javaClass.simpleName,
                 ex.message,
@@ -55,21 +58,31 @@ class ChallengeService(
         }
     }
 
-    fun getChallenge(challengeId: Long): GetChallengeResult {
-        logger.debug("Starting getChallenge for challengeId={}", challengeId)
+    fun getChallenge(challengeId: Long, guildId: Long): GetChallengeResult {
+        logger.debug("Starting getChallenge for challengeId={} guildId={}", challengeId, guildId)
         val startTime = System.currentTimeMillis()
 
         return try {
-            val challenge = repository.findById(challengeId).orElse(null)
+            val challenge = retrieveChallenge(challengeId)
             val queryTime = System.currentTimeMillis() - startTime
 
             if (challenge == null) {
                 logger.info("Challenge not found in database: challengeId={} (query took {}ms)", challengeId, queryTime)
                 GetChallengeResult.NotFound
+            } else if (challenge.guildId != guildId) {
+                logger.warn(
+                    "Unauthorized access attempt: challengeId={} belongs to guildId={}, attempted by guildId={} (query took {}ms)",
+                    challengeId,
+                    challenge.guildId,
+                    guildId,
+                    queryTime,
+                )
+                GetChallengeResult.Unauthorized
             } else {
                 logger.debug(
-                    "Found challenge in database: challengeId={}, name='{}', userId={} (query took {}ms)",
+                    "Found challenge in database: challengeId={}, guildId={}, name='{}', userId={} (query took {}ms)",
                     challengeId,
+                    guildId,
                     challenge.name,
                     challenge.userId,
                     queryTime,
@@ -77,8 +90,9 @@ class ChallengeService(
                 val dto = challenge.toChallengeDto()
                 val totalTime = System.currentTimeMillis() - startTime
                 logger.info(
-                    "Successfully retrieved and mapped challenge: challengeId={} in {}ms",
+                    "Successfully retrieved and mapped challenge: challengeId={} guildId={} in {}ms",
                     challengeId,
+                    guildId,
                     totalTime,
                 )
                 GetChallengeResult.Success(dto)
@@ -86,8 +100,9 @@ class ChallengeService(
         } catch (ex: Exception) {
             val totalTime = System.currentTimeMillis() - startTime
             logger.error(
-                "Error retrieving challenge challengeId={} after {}ms: {} - {}",
+                "Error retrieving challenge challengeId={} guildId={} after {}ms: {} - {}",
                 challengeId,
+                guildId,
                 totalTime,
                 ex.javaClass.simpleName,
                 ex.message,
@@ -208,7 +223,7 @@ class ChallengeService(
         val existsTime = System.currentTimeMillis() - existsStartTime
 
         logger.debug(
-            "Existence check completed in {}ms: challengeId={}, exists={}",
+            "Retrieval completed in {}ms: challengeId={}, exists={}",
             existsTime,
             challengeId,
             entity != null,
@@ -259,6 +274,8 @@ sealed interface GetChallengeResult {
     ) : GetChallengeResult
 
     object NotFound : GetChallengeResult
+
+    object Unauthorized : GetChallengeResult
 
     object UnknownError : GetChallengeResult
 }
