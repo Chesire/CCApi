@@ -73,6 +73,38 @@ class JwtService {
             null
         }
 
+    fun extractGuildId(token: String): Long? =
+        try {
+            val claims = extractAllClaims(token)
+            claims[GUILD_ID]?.toString()?.toLongOrNull()
+        } catch (ex: Exception) {
+            null
+        }
+
+    fun extractScope(token: String): String? =
+        try {
+            val claims = extractAllClaims(token)
+            claims[SCOPE]?.toString()
+        } catch (ex: Exception) {
+            null
+        }
+
+    fun extractJwtId(token: String): String? =
+        try {
+            val claims = extractAllClaims(token)
+            claims[Claims.ID]?.toString()
+        } catch (ex: Exception) {
+            null
+        }
+
+    fun hasScope(token: String, requiredScope: String): Boolean =
+        try {
+            val scope = extractScope(token)
+            scope == requiredScope
+        } catch (ex: Exception) {
+            false
+        }
+
     fun isTokenValid(token: String): Boolean =
         try {
             extractAllClaims(token)
