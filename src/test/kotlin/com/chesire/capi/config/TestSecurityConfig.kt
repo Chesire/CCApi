@@ -20,7 +20,7 @@ class TestSecurityConfig {
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
             .authorizeHttpRequests { auth ->
-                auth.anyRequest().permitAll()
+                auth.anyRequest().authenticated()
             }
             .build()
 }
