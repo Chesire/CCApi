@@ -1,5 +1,6 @@
 package com.chesire.capi.event
 
+import com.chesire.capi.config.SecurityConfig
 import com.chesire.capi.event.dto.EventDto
 import com.chesire.capi.event.dto.PostEventDto
 import com.chesire.capi.event.service.CreateEventResult
@@ -10,9 +11,13 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -21,7 +26,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDateTime
 
-@WebMvcTest(EventController::class)
+@WebMvcTest(
+    controllers = [EventController::class]
+)
 @DisplayName("EventController Tests")
 class EventControllerTest {
     @Autowired
@@ -32,6 +39,18 @@ class EventControllerTest {
 
     @MockBean
     private lateinit var eventService: EventService
+
+    @MockBean
+    private lateinit var jwtService: com.chesire.capi.config.jwt.JwtService
+
+    @MockBean
+    private lateinit var jwtAuthenticationFilter: com.chesire.capi.config.jwt.JwtAuthenticationFilter
+
+    @MockBean
+    private lateinit var tokenRateLimiter: com.chesire.capi.config.TokenRateLimiter
+
+    @MockBean
+    private lateinit var requestCorrelationFilter: com.chesire.capi.config.RequestCorrelationFilter
 
     private fun createValidPostEventDto(
         key: String = "challenge_completed",
@@ -56,12 +75,14 @@ class EventControllerTest {
     )
 
     @Test
+    @WithMockJwtAuthentication
     @DisplayName("Should create event with valid data")
     fun shouldCreateEventWithValidData() {
         val postDto = createValidPostEventDto()
         val createdEvent = createValidEventDto()
+        val guildId = 1000L
 
-        `when`(eventService.createEvent(postDto))
+        `when`(eventService.createEvent(postDto, guildId))
             .thenReturn(CreateEventResult.Success(createdEvent))
 
         mockMvc.perform(
@@ -81,8 +102,9 @@ class EventControllerTest {
     @DisplayName("Should return internal server error on unknown error for create event")
     fun shouldReturnInternalServerErrorOnUnknownErrorForCreateEvent() {
         val postDto = createValidPostEventDto()
+        val guildId = 1000L
 
-        `when`(eventService.createEvent(postDto))
+        `when`(eventService.createEvent(postDto, guildId))
             .thenReturn(CreateEventResult.UnknownError)
 
         mockMvc.perform(
@@ -139,6 +161,7 @@ class EventControllerTest {
     @DisplayName("Should return events by key when found")
     fun shouldReturnEventsByKeyWhenFound() {
         val key = "challenge_completed"
+        val guildId = 1000L
         val events =
             listOf(
                 createValidEventDto(
@@ -155,7 +178,7 @@ class EventControllerTest {
                 ),
             )
 
-        `when`(eventService.getEventsByKey(key))
+        `when`(eventService.getEventsByKey(key, guildId))
             .thenReturn(GetEventsResult.Success(events))
 
         mockMvc.perform(get("/api/v1/events/{key}", key))
@@ -177,8 +200,9 @@ class EventControllerTest {
     @DisplayName("Should return empty list when no events found for key")
     fun shouldReturnEmptyListWhenNoEventsFoundForKey() {
         val key = "nonexistent_key"
+        val guildId = 1000L
 
-        `when`(eventService.getEventsByKey(key))
+        `when`(eventService.getEventsByKey(key, guildId))
             .thenReturn(GetEventsResult.Success(emptyList()))
 
         mockMvc.perform(get("/api/v1/events/{key}", key))
@@ -192,8 +216,9 @@ class EventControllerTest {
     @DisplayName("Should return internal server error on unknown error for get events")
     fun shouldReturnInternalServerErrorOnUnknownErrorForGetEvents() {
         val key = "test_key"
+        val guildId = 1000L
 
-        `when`(eventService.getEventsByKey(key))
+        `when`(eventService.getEventsByKey(key, guildId))
             .thenReturn(GetEventsResult.UnknownError)
 
         mockMvc.perform(get("/api/v1/events/{key}", key))
@@ -213,9 +238,10 @@ class EventControllerTest {
     @DisplayName("Should handle special characters in key")
     fun shouldHandleSpecialCharactersInKey() {
         val keyWithSpecialChars = "user_action-123"
+        val guildId = 1000L
         val events = listOf(createValidEventDto(key = keyWithSpecialChars))
 
-        `when`(eventService.getEventsByKey(keyWithSpecialChars))
+        `when`(eventService.getEventsByKey(keyWithSpecialChars, guildId))
             .thenReturn(GetEventsResult.Success(events))
 
         mockMvc.perform(get("/api/v1/events/{key}", keyWithSpecialChars))
@@ -227,11 +253,13 @@ class EventControllerTest {
     @Test
     @DisplayName("Should validate key length boundaries")
     fun shouldValidateKeyLengthBoundaries() {
+        val guildId = 1000L
+
         // Test minimum valid length (1 character)
         val minKey = "a"
         val events = listOf(createValidEventDto(key = minKey))
 
-        `when`(eventService.getEventsByKey(minKey))
+        `when`(eventService.getEventsByKey(minKey, guildId))
             .thenReturn(GetEventsResult.Success(events))
 
         mockMvc.perform(get("/api/v1/events/{key}", minKey))
@@ -241,7 +269,7 @@ class EventControllerTest {
         val maxKey = "a".repeat(30)
         val maxEvents = listOf(createValidEventDto(key = maxKey))
 
-        `when`(eventService.getEventsByKey(maxKey))
+        `when`(eventService.getEventsByKey(maxKey, guildId))
             .thenReturn(GetEventsResult.Success(maxEvents))
 
         mockMvc.perform(get("/api/v1/events/{key}", maxKey))
@@ -251,6 +279,7 @@ class EventControllerTest {
     @Test
     @DisplayName("Should create event with different field combinations")
     fun shouldCreateEventWithDifferentFieldCombinations() {
+        val guildId = 1000L
         val testCases =
             listOf(
                 createValidPostEventDto(key = "a", value = "x", userId = 1L),
@@ -266,7 +295,7 @@ class EventControllerTest {
                     userId = postDto.userId,
                 )
 
-            `when`(eventService.createEvent(postDto))
+            `when`(eventService.createEvent(postDto, guildId))
                 .thenReturn(CreateEventResult.Success(createdEvent))
 
             mockMvc.perform(
