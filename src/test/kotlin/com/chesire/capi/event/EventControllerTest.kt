@@ -45,6 +45,15 @@ class EventControllerTest {
     @MockBean
     private lateinit var eventService: EventService
 
+    @MockBean
+    private lateinit var jwtService: com.chesire.capi.config.jwt.JwtService
+
+    @MockBean
+    private lateinit var tokenRateLimiter: com.chesire.capi.config.TokenRateLimiter
+
+    @MockBean
+    private lateinit var requestCorrelationFilter: com.chesire.capi.config.RequestCorrelationFilter
+
     private fun mockAuthentication(userId: Long = 123L, guildId: Long = 1000L) =
         JwtAuthentication(userId = userId, guildId = guildId)
 

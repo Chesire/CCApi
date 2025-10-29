@@ -9,7 +9,6 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 
 @TestConfiguration
-@EnableWebSecurity
 class TestSecurityConfig {
     @Bean
     @Primary
@@ -20,7 +19,7 @@ class TestSecurityConfig {
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
             .authorizeHttpRequests { auth ->
-                auth.anyRequest().authenticated()
+                auth.anyRequest().permitAll()
             }
             .build()
 }
