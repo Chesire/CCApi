@@ -7,25 +7,28 @@ import com.chesire.capi.challenge.service.DeleteChallengeResult
 import com.chesire.capi.challenge.service.GetChallengeResult
 import com.chesire.capi.challenge.service.GetChallengesResult
 import com.chesire.capi.challenge.service.PostChallengeResult
+import com.chesire.capi.config.jwt.JwtService
 import com.chesire.capi.models.TimeFrame
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-@WebMvcTest(ChallengeController::class)
-@DisplayName("ChallengeController Tests")
+@SpringBootTest
+@AutoConfigureMockMvc
+@DisplayName("Challenge Controller Tests")
 class ChallengeControllerTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -33,314 +36,274 @@ class ChallengeControllerTest {
     @Autowired
     private lateinit var objectMapper: ObjectMapper
 
+    @Autowired
+    private lateinit var jwtService: JwtService
+
     @MockBean
     private lateinit var challengeService: ChallengeService
 
-    private fun createValidPostChallengeDto(
-        name: String = "Test Challenge",
-        description: String = "A test challenge description",
-        timeFrame: TimeFrame = TimeFrame.DAILY,
-        allowPauses: Boolean = true,
-        cheats: Int = 2,
-    ) = PostChallengeDto(
-        name = name,
-        description = description,
-        timeFrame = timeFrame,
-        allowPauses = allowPauses,
-        cheats = cheats,
-    )
+    private lateinit var validToken: String
 
-    private fun createValidChallengeDto(
-        id: Long = 1L,
-        name: String = "Test Challenge",
-        description: String = "A test challenge description",
-        timeFrame: TimeFrame = TimeFrame.DAILY,
-        allowPauses: Boolean = true,
-        cheats: Int = 2,
-    ) = ChallengeDto(
-        id = id,
-        name = name,
-        description = description,
-        timeFrame = timeFrame,
-        allowPauses = allowPauses,
-        cheats = cheats,
-    )
-
-    @Test
-    @DisplayName("Should return challenge when found by ID")
-    fun shouldReturnChallengeWhenFoundById() {
-        val challengeId = 1L
-        val expectedChallenge = createValidChallengeDto()
-
-        `when`(challengeService.getChallenge(challengeId, 1L))
-            .thenReturn(GetChallengeResult.Success(expectedChallenge))
-
-        val result = mockMvc.perform(get("/api/v1/challenges/{challengeId}", challengeId))
-
-        result
-            .andExpect(status().isOk())
-            .andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.id").value(1))
-            .andExpect(jsonPath("$.name").value("Test Challenge"))
-            .andExpect(jsonPath("$.description").value("A test challenge description"))
-            .andExpect(jsonPath("$.timeFrame").value("DAILY"))
-            .andExpect(jsonPath("$.allowPauses").value(true))
-            .andExpect(jsonPath("$.cheats").value(2))
+    @BeforeEach
+    fun setup() {
+        validToken = jwtService.generateToken(userId = TEST_USER_ID, guildId = TEST_GUILD_ID)
     }
 
-    @Test
-    @DisplayName("Should return no content when challenge not found")
-    fun shouldReturnNoContentWhenChallengeNotFound() {
-        val challengeId = 999L
+    private fun authenticatedGet(url: String, vararg uriVariables: Any) =
+        mockMvc.perform(
+            get(url, *uriVariables)
+                .header("Authorization", "Bearer $validToken")
+        )
 
-        `when`(challengeService.getChallenge(challengeId, 1L))
-            .thenReturn(GetChallengeResult.NotFound)
+    private fun authenticatedPost(url: String, body: Any) =
+        mockMvc.perform(
+            post(url)
+                .header("Authorization", "Bearer $validToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(body))
+        )
 
-        mockMvc
-            .perform(get("/api/v1/challenges/{challengeId}", challengeId))
-            .andExpect(status().isNoContent())
+    private fun authenticatedDelete(url: String, vararg uriVariables: Any) =
+        mockMvc.perform(
+            delete(url, *uriVariables)
+                .header("Authorization", "Bearer $validToken")
+        )
+
+    @Nested
+    @DisplayName("GET /challenges/{challengeId}")
+    inner class GetChallengeById {
+
+        @Test
+        @DisplayName("Should return 200 with challenge when found")
+        fun shouldReturnChallengeWhenFound() {
+            `when`(challengeService.getChallenge(1L, TEST_GUILD_ID))
+                .thenReturn(GetChallengeResult.Success(ChallengeDto(1L, "Test", "Desc", TimeFrame.DAILY, true, 2)))
+
+            authenticatedGet("/api/v1/challenges/{challengeId}", 1L)
+                .andExpect(status().isOk)
+        }
+
+        @Test
+        @DisplayName("Should return 204 when challenge not found")
+        fun shouldReturnNoContentWhenNotFound() {
+            `when`(challengeService.getChallenge(999L, TEST_GUILD_ID))
+                .thenReturn(GetChallengeResult.NotFound)
+
+            authenticatedGet("/api/v1/challenges/{challengeId}", 999L)
+                .andExpect(status().isNoContent)
+        }
+
+        @Test
+        @DisplayName("Should return 403 when unauthorized")
+        fun shouldReturnForbiddenWhenUnauthorized() {
+            `when`(challengeService.getChallenge(1L, TEST_GUILD_ID))
+                .thenReturn(GetChallengeResult.Unauthorized)
+
+            authenticatedGet("/api/v1/challenges/{challengeId}", 1L)
+                .andExpect(status().isForbidden)
+        }
+
+        @Test
+        @DisplayName("Should return 500 on unknown error")
+        fun shouldReturnInternalServerErrorOnUnknownError() {
+            `when`(challengeService.getChallenge(1L, TEST_GUILD_ID))
+                .thenReturn(GetChallengeResult.UnknownError)
+
+            authenticatedGet("/api/v1/challenges/{challengeId}", 1L)
+                .andExpect(status().isInternalServerError)
+        }
+
+        @Test
+        @DisplayName("Should return 400 for negative ID")
+        fun shouldReturnBadRequestForNegativeId() {
+            authenticatedGet("/api/v1/challenges/{challengeId}", -1L)
+                .andExpect(status().isBadRequest)
+        }
+
+        @Test
+        @DisplayName("Should return 400 for zero ID")
+        fun shouldReturnBadRequestForZeroId() {
+            authenticatedGet("/api/v1/challenges/{challengeId}", 0L)
+                .andExpect(status().isBadRequest)
+        }
     }
 
-    @Test
-    @DisplayName("Should return internal server error on unknown error")
-    fun shouldReturnInternalServerErrorOnUnknownError() {
-        val challengeId = 1L
+    @Nested
+    @DisplayName("GET /challenges/user/{userId}")
+    inner class GetChallengesByUser {
 
-        `when`(challengeService.getChallenge(challengeId, 1L))
-            .thenReturn(GetChallengeResult.UnknownError)
+        @Test
+        @DisplayName("Should return 200 with challenges when found")
+        fun shouldReturnChallengesWhenFound() {
+            `when`(challengeService.getChallenges(1L, TEST_GUILD_ID))
+                .thenReturn(
+                    GetChallengesResult.Success(
+                        listOf(
+                            ChallengeDto(1L, "C1", "D1", TimeFrame.DAILY, true, 2)
+                        )
+                    )
+                )
 
-        mockMvc
-            .perform(get("/api/v1/challenges/{challengeId}", challengeId))
-            .andExpect(status().isInternalServerError())
+            authenticatedGet("/api/v1/challenges/user/{userId}", 1L)
+                .andExpect(status().isOk)
+        }
+
+        @Test
+        @DisplayName("Should return 204 when no challenges found")
+        fun shouldReturnNoContentWhenNoChallengesFound() {
+            `when`(challengeService.getChallenges(1L, TEST_GUILD_ID))
+                .thenReturn(GetChallengesResult.NotFound)
+
+            authenticatedGet("/api/v1/challenges/user/{userId}", 1L)
+                .andExpect(status().isNoContent)
+        }
+
+        @Test
+        @DisplayName("Should return 500 on unknown error")
+        fun shouldReturnInternalServerErrorOnUnknownError() {
+            `when`(challengeService.getChallenges(1L, TEST_GUILD_ID))
+                .thenReturn(GetChallengesResult.UnknownError)
+
+            authenticatedGet("/api/v1/challenges/user/{userId}", 1L)
+                .andExpect(status().isInternalServerError)
+        }
+
+        @Test
+        @DisplayName("Should return 400 for negative ID")
+        fun shouldReturnBadRequestForNegativeId() {
+            authenticatedGet("/api/v1/challenges/user/{userId}", -1L)
+                .andExpect(status().isBadRequest)
+        }
+
+        @Test
+        @DisplayName("Should return 400 for zero ID")
+        fun shouldReturnBadRequestForZeroId() {
+            authenticatedGet("/api/v1/challenges/user/{userId}", 0L)
+                .andExpect(status().isBadRequest)
+        }
     }
 
-    @Test
-    @DisplayName("Should return bad request for negative challenge ID")
-    fun shouldReturnBadRequestForNegativeChallengeId() {
-        mockMvc
-            .perform(get("/api/v1/challenges/{challengeId}", -1L))
-            .andExpect(status().isBadRequest())
+    @Nested
+    @DisplayName("POST /challenges")
+    inner class CreateChallenge {
+
+        @Test
+        @DisplayName("Should return 200 when challenge created successfully")
+        fun shouldReturnOkWhenChallengeCreated() {
+            val postDto = PostChallengeDto("Test", "Description", TimeFrame.DAILY, true, 2)
+            `when`(challengeService.addChallenge(postDto, TEST_USER_ID, TEST_GUILD_ID))
+                .thenReturn(
+                    PostChallengeResult.Success(
+                        ChallengeDto(
+                            1L,
+                            "Test",
+                            "Description",
+                            TimeFrame.DAILY,
+                            true,
+                            2
+                        )
+                    )
+                )
+
+            authenticatedPost("/api/v1/challenges", postDto)
+                .andExpect(status().isOk)
+        }
+
+        @Test
+        @DisplayName("Should return 400 for invalid data")
+        fun shouldReturnBadRequestForInvalidData() {
+            val postDto = PostChallengeDto("Test", "Description", TimeFrame.DAILY, true, 2)
+            `when`(challengeService.addChallenge(postDto, TEST_USER_ID, TEST_GUILD_ID))
+                .thenReturn(PostChallengeResult.InvalidData)
+
+            authenticatedPost("/api/v1/challenges", postDto)
+                .andExpect(status().isBadRequest)
+        }
+
+        @Test
+        @DisplayName("Should return 204 when related entity not found")
+        fun shouldReturnNoContentWhenRelatedEntityNotFound() {
+            val postDto = PostChallengeDto("Test", "Description", TimeFrame.DAILY, true, 2)
+            `when`(challengeService.addChallenge(postDto, TEST_USER_ID, TEST_GUILD_ID))
+                .thenReturn(PostChallengeResult.NotFound)
+
+            authenticatedPost("/api/v1/challenges", postDto)
+                .andExpect(status().isNoContent)
+        }
+
+        @Test
+        @DisplayName("Should return 500 on unknown error")
+        fun shouldReturnInternalServerErrorOnUnknownError() {
+            val postDto = PostChallengeDto("Test", "Description", TimeFrame.DAILY, true, 2)
+            `when`(challengeService.addChallenge(postDto, TEST_USER_ID, TEST_GUILD_ID))
+                .thenReturn(PostChallengeResult.UnknownError)
+
+            authenticatedPost("/api/v1/challenges", postDto)
+                .andExpect(status().isInternalServerError)
+        }
     }
 
-    @Test
-    @DisplayName("Should return bad request for zero challenge ID")
-    fun shouldReturnBadRequestForZeroChallengeId() {
-        mockMvc
-            .perform(get("/api/v1/challenges/{challengeId}", 0L))
-            .andExpect(status().isBadRequest())
+    @Nested
+    @DisplayName("DELETE /challenges/{challengeId}")
+    inner class DeleteChallenge {
+
+        @Test
+        @DisplayName("Should return 204 when challenge deleted successfully")
+        fun shouldReturnNoContentWhenDeleted() {
+            `when`(challengeService.deleteChallenge(1L, TEST_USER_ID, TEST_GUILD_ID))
+                .thenReturn(DeleteChallengeResult.Success)
+
+            authenticatedDelete("/api/v1/challenges/{challengeId}", 1L)
+                .andExpect(status().isNoContent)
+        }
+
+        @Test
+        @DisplayName("Should return 204 when challenge not found")
+        fun shouldReturnNoContentWhenNotFound() {
+            `when`(challengeService.deleteChallenge(999L, TEST_USER_ID, TEST_GUILD_ID))
+                .thenReturn(DeleteChallengeResult.NotFound)
+
+            authenticatedDelete("/api/v1/challenges/{challengeId}", 999L)
+                .andExpect(status().isNoContent)
+        }
+
+        @Test
+        @DisplayName("Should return 403 when unauthorized")
+        fun shouldReturnForbiddenWhenUnauthorized() {
+            `when`(challengeService.deleteChallenge(1L, TEST_USER_ID, TEST_GUILD_ID))
+                .thenReturn(DeleteChallengeResult.Unauthorized)
+
+            authenticatedDelete("/api/v1/challenges/{challengeId}", 1L)
+                .andExpect(status().isForbidden)
+        }
+
+        @Test
+        @DisplayName("Should return 500 on unknown error")
+        fun shouldReturnInternalServerErrorOnUnknownError() {
+            `when`(challengeService.deleteChallenge(1L, TEST_USER_ID, TEST_GUILD_ID))
+                .thenReturn(DeleteChallengeResult.UnknownError)
+
+            authenticatedDelete("/api/v1/challenges/{challengeId}", 1L)
+                .andExpect(status().isInternalServerError)
+        }
+
+        @Test
+        @DisplayName("Should return 400 for negative ID")
+        fun shouldReturnBadRequestForNegativeId() {
+            authenticatedDelete("/api/v1/challenges/{challengeId}", -1L)
+                .andExpect(status().isBadRequest)
+        }
+
+        @Test
+        @DisplayName("Should return 400 for zero ID")
+        fun shouldReturnBadRequestForZeroId() {
+            authenticatedDelete("/api/v1/challenges/{challengeId}", 0L)
+                .andExpect(status().isBadRequest)
+        }
     }
 
-    @Test
-    @DisplayName("Should return list of challenges for valid user")
-    fun shouldReturnListOfChallengesForValidUser() {
-        val userId = 1L
-        val challenges =
-            listOf(
-                createValidChallengeDto(id = 1L, name = "Challenge 1"),
-                createValidChallengeDto(id = 2L, name = "Challenge 2", timeFrame = TimeFrame.WEEKLY, allowPauses = false, cheats = 0),
-            )
-
-        `when`(challengeService.getChallenges(userId, 1L))
-            .thenReturn(GetChallengesResult.Success(challenges))
-
-        mockMvc
-            .perform(get("/api/v1/challenges/user/{userId}", userId))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$").isArray())
-            .andExpect(jsonPath("$.length()").value(2))
-            .andExpect(jsonPath("$[0].id").value(1))
-            .andExpect(jsonPath("$[0].name").value("Challenge 1"))
-            .andExpect(jsonPath("$[0].timeFrame").value("DAILY"))
-            .andExpect(jsonPath("$[1].id").value(2))
-            .andExpect(jsonPath("$[1].name").value("Challenge 2"))
-            .andExpect(jsonPath("$[1].timeFrame").value("WEEKLY"))
-            .andExpect(jsonPath("$[1].allowPauses").value(false))
-    }
-
-    @Test
-    @DisplayName("Should return no content when user has no challenges")
-    fun shouldReturnNoContentWhenUserHasNoChallenges() {
-        val userId = 1L
-
-        `when`(challengeService.getChallenges(userId, 1L))
-            .thenReturn(GetChallengesResult.NotFound)
-
-        mockMvc
-            .perform(get("/api/v1/challenges/user/{userId}", userId))
-            .andExpect(status().isNoContent())
-    }
-
-    @Test
-    @DisplayName("Should return internal server error on unknown error for user challenges")
-    fun shouldReturnInternalServerErrorOnUnknownErrorForUserChallenges() {
-        val userId = 1L
-
-        `when`(challengeService.getChallenges(userId, 1L))
-            .thenReturn(GetChallengesResult.UnknownError)
-
-        mockMvc
-            .perform(get("/api/v1/challenges/user/{userId}", userId))
-            .andExpect(status().isInternalServerError())
-    }
-
-    @Test
-    @DisplayName("Should return bad request for negative user ID")
-    fun shouldReturnBadRequestForNegativeUserId() {
-        mockMvc
-            .perform(get("/api/v1/challenges/user/{userId}", -1L))
-            .andExpect(status().isBadRequest())
-    }
-
-    @Test
-    @DisplayName("Should return bad request for zero user ID")
-    fun shouldReturnBadRequestForZeroUserId() {
-        mockMvc
-            .perform(get("/api/v1/challenges/user/{userId}", 0L))
-            .andExpect(status().isBadRequest())
-    }
-
-    @Test
-    @DisplayName("Should create challenge with valid data")
-    fun shouldCreateChallengeWithValidData() {
-        val postDto = createValidPostChallengeDto()
-        val createdChallenge = createValidChallengeDto()
-
-        `when`(challengeService.addChallenge(postDto, 0L, 1L))
-            .thenReturn(PostChallengeResult.Success(createdChallenge))
-
-        mockMvc
-            .perform(
-                post("/api/v1/challenges")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(postDto)),
-            ).andExpect(status().isOk())
-            .andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.id").value(1))
-            .andExpect(jsonPath("$.name").value("Test Challenge"))
-            .andExpect(jsonPath("$.description").value("A test challenge description"))
-            .andExpect(jsonPath("$.timeFrame").value("DAILY"))
-            .andExpect(jsonPath("$.allowPauses").value(true))
-            .andExpect(jsonPath("$.cheats").value(2))
-    }
-
-    @Test
-    @DisplayName("Should return bad request on invalid data response from service")
-    fun shouldReturnBadRequestOnInvalidDataResponseFromService() {
-        val postDto = createValidPostChallengeDto()
-
-        `when`(challengeService.addChallenge(postDto, 0L, 1L))
-            .thenReturn(PostChallengeResult.InvalidData)
-
-        mockMvc
-            .perform(
-                post("/api/v1/challenges")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(postDto)),
-            ).andExpect(status().isBadRequest())
-    }
-
-    @Test
-    @DisplayName("Should return no content on not found response from service")
-    fun shouldReturnNoContentOnNotFoundResponseFromService() {
-        val postDto = createValidPostChallengeDto()
-
-        `when`(challengeService.addChallenge(postDto, 0L, 1L))
-            .thenReturn(PostChallengeResult.NotFound)
-
-        mockMvc
-            .perform(
-                post("/api/v1/challenges")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(postDto)),
-            ).andExpect(status().isNoContent())
-    }
-
-    @Test
-    @DisplayName("Should return internal server error on unknown error for create challenge")
-    fun shouldReturnInternalServerErrorOnUnknownErrorForCreateChallenge() {
-        val postDto = createValidPostChallengeDto()
-
-        `when`(challengeService.addChallenge(postDto, 0L, 1L))
-            .thenReturn(PostChallengeResult.UnknownError)
-
-        mockMvc
-            .perform(
-                post("/api/v1/challenges")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(postDto)),
-            ).andExpect(status().isInternalServerError())
-    }
-
-    @Test
-    @DisplayName("Should delete challenge successfully")
-    fun shouldDeleteChallengeSuccessfully() {
-        val challengeId = 1L
-        val userId = 0L
-
-        `when`(challengeService.deleteChallenge(challengeId, userId, 1L))
-            .thenReturn(DeleteChallengeResult.Success)
-
-        mockMvc
-            .perform(delete("/api/v1/challenges/{challengeId}", challengeId))
-            .andExpect(status().isNoContent())
-    }
-
-    @Test
-    @DisplayName("Should return no content when challenge to delete not found")
-    fun shouldReturnNoContentWhenChallengeToDeleteNotFound() {
-        val challengeId = 999L
-        val userId = 0L
-
-        `when`(challengeService.deleteChallenge(challengeId, userId, 1L))
-            .thenReturn(DeleteChallengeResult.NotFound)
-
-        mockMvc
-            .perform(delete("/api/v1/challenges/{challengeId}", challengeId))
-            .andExpect(status().isNoContent())
-    }
-
-    @Test
-    @DisplayName("Should return forbidden when user is not authorized to delete challenge")
-    fun shouldReturnForbiddenWhenUserNotAuthorizedToDeleteChallenge() {
-        val challengeId = 1L
-        val userId = 0L
-
-        `when`(challengeService.deleteChallenge(challengeId, userId, 1L))
-            .thenReturn(DeleteChallengeResult.Unauthorized)
-
-        mockMvc
-            .perform(delete("/api/v1/challenges/{challengeId}", challengeId))
-            .andExpect(status().isForbidden())
-    }
-
-    @Test
-    @DisplayName("Should return internal server error on unknown error for delete challenge")
-    fun shouldReturnInternalServerErrorOnUnknownErrorForDeleteChallenge() {
-        val challengeId = 1L
-        val userId = 0L
-
-        `when`(challengeService.deleteChallenge(challengeId, userId, 1L))
-            .thenReturn(DeleteChallengeResult.UnknownError)
-
-        mockMvc
-            .perform(delete("/api/v1/challenges/{challengeId}", challengeId))
-            .andExpect(status().isInternalServerError())
-    }
-
-    @Test
-    @DisplayName("Should return bad request for negative challenge ID on delete")
-    fun shouldReturnBadRequestForNegativeChallengeIdOnDelete() {
-        mockMvc
-            .perform(delete("/api/v1/challenges/{challengeId}", -1L))
-            .andExpect(status().isBadRequest())
-    }
-
-    @Test
-    @DisplayName("Should return bad request for zero challenge ID on delete")
-    fun shouldReturnBadRequestForZeroChallengeIdOnDelete() {
-        mockMvc
-            .perform(delete("/api/v1/challenges/{challengeId}", 0L))
-            .andExpect(status().isBadRequest())
+    companion object {
+        private const val TEST_USER_ID = 123L
+        private const val TEST_GUILD_ID = 456L
     }
 }

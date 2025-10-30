@@ -7,14 +7,13 @@ import com.chesire.capi.challenge.service.DeleteChallengeResult
 import com.chesire.capi.challenge.service.GetChallengeResult
 import com.chesire.capi.challenge.service.GetChallengesResult
 import com.chesire.capi.challenge.service.PostChallengeResult
-import com.chesire.capi.config.jwt.JwtAuthentication
+import com.chesire.capi.config.getAuthenticatedUser
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Positive
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.Authentication
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -33,10 +32,8 @@ class ChallengeController(
     @GetMapping("/user/{userId}")
     fun getChallengesByUser(
         @PathVariable @Positive(message = "User ID must be positive") userId: Long,
-        authentication: Authentication,
     ): ResponseEntity<List<ChallengeDto>> {
-        val auth = authentication as JwtAuthentication
-        val guildId = auth.guildId
+        val guildId = getAuthenticatedUser().guildId
 
         logger.info("Fetching challenges for user")
         return when (val result = challengeService.getChallenges(userId, guildId)) {
@@ -60,10 +57,8 @@ class ChallengeController(
     @GetMapping("/{challengeId}")
     fun getChallengeById(
         @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long,
-        authentication: Authentication,
     ): ResponseEntity<ChallengeDto> {
-        val auth = authentication as JwtAuthentication
-        val guildId = auth.guildId
+        val guildId = getAuthenticatedUser().guildId
 
         logger.info("Fetching challenge for challengeId={}", challengeId)
         return when (val result = challengeService.getChallenge(challengeId, guildId)) {
@@ -92,16 +87,19 @@ class ChallengeController(
     @PostMapping(consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun createChallenge(
         @Valid @RequestBody data: PostChallengeDto,
-        authentication: Authentication,
     ): ResponseEntity<ChallengeDto> {
-        val auth = authentication as JwtAuthentication
+        val auth = getAuthenticatedUser()
         val userId = auth.userId
         val guildId = auth.guildId
 
         logger.info("Creating challenge: {}", data.name)
         return when (val result = challengeService.addChallenge(data, userId, guildId)) {
             is PostChallengeResult.Success -> {
-                logger.info("Successfully created challenge: id={}, name={}", result.challenge.id, result.challenge.name)
+                logger.info(
+                    "Successfully created challenge: id={}, name={}",
+                    result.challenge.id,
+                    result.challenge.name
+                )
                 ResponseEntity.ok(result.challenge)
             }
 
@@ -125,9 +123,8 @@ class ChallengeController(
     @DeleteMapping("/{challengeId}")
     fun deleteChallenge(
         @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long,
-        authentication: Authentication,
     ): ResponseEntity<Void> {
-        val auth = authentication as JwtAuthentication
+        val auth = getAuthenticatedUser()
         val userId = auth.userId
         val guildId = auth.guildId
 
