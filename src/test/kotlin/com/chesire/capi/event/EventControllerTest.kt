@@ -1,26 +1,21 @@
 package com.chesire.capi.event
 
-import com.chesire.capi.config.SecurityConfig
-import com.chesire.capi.config.TestSecurityConfig
-import com.chesire.capi.config.jwt.JwtAuthentication
+import com.chesire.capi.config.jwt.JwtService
 import com.chesire.capi.event.dto.EventDto
 import com.chesire.capi.event.dto.PostEventDto
 import com.chesire.capi.event.service.CreateEventResult
 import com.chesire.capi.event.service.EventService
 import com.chesire.capi.event.service.GetEventsResult
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -30,10 +25,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDateTime
 
-@WebMvcTest(
-    controllers = [EventController::class],
-    excludeAutoConfiguration = [SecurityAutoConfiguration::class]
-)
+@SpringBootTest
+@AutoConfigureMockMvc
 @DisplayName("EventController Tests")
 class EventControllerTest {
     @Autowired
@@ -42,25 +35,23 @@ class EventControllerTest {
     @Autowired
     private lateinit var objectMapper: ObjectMapper
 
+    @Autowired
+    private lateinit var jwtService: JwtService
+
     @MockBean
     private lateinit var eventService: EventService
 
-    @MockBean
-    private lateinit var jwtService: com.chesire.capi.config.jwt.JwtService
+    private lateinit var validToken: String
 
-    @MockBean
-    private lateinit var tokenRateLimiter: com.chesire.capi.config.TokenRateLimiter
-
-    @MockBean
-    private lateinit var requestCorrelationFilter: com.chesire.capi.config.RequestCorrelationFilter
-
-    private fun mockAuthentication(userId: Long = 123L, guildId: Long = 1000L) =
-        JwtAuthentication(userId = userId, guildId = guildId)
+    @BeforeEach
+    fun setup() {
+        validToken = jwtService.generateToken(userId = TEST_USER_ID, guildId = TEST_GUILD_ID)
+    }
 
     private fun createValidPostEventDto(
         key: String = "challenge_completed",
         value: String = "gym_challenge",
-        userId: Long = 123L,
+        userId: Long = TEST_USER_ID,
     ) = PostEventDto(
         key = key,
         value = value,
@@ -70,7 +61,7 @@ class EventControllerTest {
     private fun createValidEventDto(
         key: String = "challenge_completed",
         value: String = "gym_challenge",
-        userId: Long = 123L,
+        userId: Long = TEST_USER_ID,
         timestamp: LocalDateTime = LocalDateTime.of(2024, 1, 1, 12, 0, 0),
     ) = EventDto(
         key = key,
@@ -79,19 +70,23 @@ class EventControllerTest {
         timestamp = timestamp,
     )
 
+    companion object {
+        private const val TEST_USER_ID = 123L
+        private const val TEST_GUILD_ID = 1000L
+    }
+
     @Test
     @DisplayName("Should create event with valid data")
     fun shouldCreateEventWithValidData() {
         val postDto = createValidPostEventDto()
         val createdEvent = createValidEventDto()
-        val guildId = 1000L
 
-        `when`(eventService.createEvent(postDto, guildId))
+        `when`(eventService.createEvent(postDto, TEST_GUILD_ID))
             .thenReturn(CreateEventResult.Success(createdEvent))
 
         mockMvc.perform(
             post("/api/v1/events")
-                .with(authentication(mockAuthentication()))
+                .header("Authorization", "Bearer $validToken")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(postDto)),
         )
@@ -100,7 +95,7 @@ class EventControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.key").value("challenge_completed"))
             .andExpect(jsonPath("$.value").value("gym_challenge"))
-            .andExpect(jsonPath("$.userId").value(123))
+            .andExpect(jsonPath("$.userId").value(TEST_USER_ID))
             .andExpect(jsonPath("$.timestamp").value("2024-01-01T12:00:00"))
     }
 
@@ -108,13 +103,13 @@ class EventControllerTest {
     @DisplayName("Should return internal server error on unknown error for create event")
     fun shouldReturnInternalServerErrorOnUnknownErrorForCreateEvent() {
         val postDto = createValidPostEventDto()
-        val guildId = 1000L
 
-        `when`(eventService.createEvent(postDto, guildId))
+        `when`(eventService.createEvent(postDto, TEST_GUILD_ID))
             .thenReturn(CreateEventResult.UnknownError)
 
         mockMvc.perform(
-            post("/api/v1/events").with(authentication(mockAuthentication()))
+            post("/api/v1/events")
+                .header("Authorization", "Bearer $validToken")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(postDto)),
         )
@@ -132,7 +127,8 @@ class EventControllerTest {
             )
 
         mockMvc.perform(
-            post("/api/v1/events").with(authentication(mockAuthentication()))
+            post("/api/v1/events")
+                .header("Authorization", "Bearer $validToken")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)),
         )
@@ -145,7 +141,8 @@ class EventControllerTest {
         val incompleteDto = mapOf("key" to "test_key")
 
         mockMvc.perform(
-            post("/api/v1/events").with(authentication(mockAuthentication()))
+            post("/api/v1/events")
+                .header("Authorization", "Bearer $validToken")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(incompleteDto)),
         )
@@ -156,7 +153,8 @@ class EventControllerTest {
     @DisplayName("Should return bad request for malformed JSON")
     fun shouldReturnBadRequestForMalformedJson() {
         mockMvc.perform(
-            post("/api/v1/events").with(authentication(mockAuthentication()))
+            post("/api/v1/events")
+                .header("Authorization", "Bearer $validToken")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{ invalid json }"),
         )
@@ -167,7 +165,6 @@ class EventControllerTest {
     @DisplayName("Should return events by key when found")
     fun shouldReturnEventsByKeyWhenFound() {
         val key = "challenge_completed"
-        val guildId = 1000L
         val events =
             listOf(
                 createValidEventDto(
@@ -184,12 +181,12 @@ class EventControllerTest {
                 ),
             )
 
-        `when`(eventService.getEventsByKey(key, guildId))
+        `when`(eventService.getEventsByKey(key, TEST_GUILD_ID))
             .thenReturn(GetEventsResult.Success(events))
 
         mockMvc.perform(
             get("/api/v1/events/{key}", key)
-                .with(authentication(mockAuthentication()))
+                .header("Authorization", "Bearer $validToken")
         )
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -209,14 +206,13 @@ class EventControllerTest {
     @DisplayName("Should return empty list when no events found for key")
     fun shouldReturnEmptyListWhenNoEventsFoundForKey() {
         val key = "nonexistent_key"
-        val guildId = 1000L
 
-        `when`(eventService.getEventsByKey(key, guildId))
+        `when`(eventService.getEventsByKey(key, TEST_GUILD_ID))
             .thenReturn(GetEventsResult.Success(emptyList()))
 
         mockMvc.perform(
             get("/api/v1/events/{key}", key)
-                .with(authentication(mockAuthentication()))
+                .header("Authorization", "Bearer $validToken")
         )
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -228,14 +224,13 @@ class EventControllerTest {
     @DisplayName("Should return internal server error on unknown error for get events")
     fun shouldReturnInternalServerErrorOnUnknownErrorForGetEvents() {
         val key = "test_key"
-        val guildId = 1000L
 
-        `when`(eventService.getEventsByKey(key, guildId))
+        `when`(eventService.getEventsByKey(key, TEST_GUILD_ID))
             .thenReturn(GetEventsResult.UnknownError)
 
         mockMvc.perform(
             get("/api/v1/events/{key}", key)
-                .with(authentication(mockAuthentication()))
+                .header("Authorization", "Bearer $validToken")
         )
             .andExpect(status().isInternalServerError())
     }
@@ -247,7 +242,7 @@ class EventControllerTest {
 
         mockMvc.perform(
             get("/api/v1/events/{key}", invalidKey)
-                .with(authentication(mockAuthentication()))
+                .header("Authorization", "Bearer $validToken")
         )
             .andExpect(status().isBadRequest())
     }
@@ -256,15 +251,14 @@ class EventControllerTest {
     @DisplayName("Should handle special characters in key")
     fun shouldHandleSpecialCharactersInKey() {
         val keyWithSpecialChars = "user_action-123"
-        val guildId = 1000L
         val events = listOf(createValidEventDto(key = keyWithSpecialChars))
 
-        `when`(eventService.getEventsByKey(keyWithSpecialChars, guildId))
+        `when`(eventService.getEventsByKey(keyWithSpecialChars, TEST_GUILD_ID))
             .thenReturn(GetEventsResult.Success(events))
 
         mockMvc.perform(
             get("/api/v1/events/{key}", keyWithSpecialChars)
-                .with(authentication(mockAuthentication()))
+                .header("Authorization", "Bearer $validToken")
         )
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -274,18 +268,16 @@ class EventControllerTest {
     @Test
     @DisplayName("Should validate key length boundaries")
     fun shouldValidateKeyLengthBoundaries() {
-        val guildId = 1000L
-
         // Test minimum valid length (1 character)
         val minKey = "a"
         val events = listOf(createValidEventDto(key = minKey))
 
-        `when`(eventService.getEventsByKey(minKey, guildId))
+        `when`(eventService.getEventsByKey(minKey, TEST_GUILD_ID))
             .thenReturn(GetEventsResult.Success(events))
 
         mockMvc.perform(
             get("/api/v1/events/{key}", minKey)
-                .with(authentication(mockAuthentication()))
+                .header("Authorization", "Bearer $validToken")
         )
             .andExpect(status().isOk())
 
@@ -293,12 +285,12 @@ class EventControllerTest {
         val maxKey = "a".repeat(30)
         val maxEvents = listOf(createValidEventDto(key = maxKey))
 
-        `when`(eventService.getEventsByKey(maxKey, guildId))
+        `when`(eventService.getEventsByKey(maxKey, TEST_GUILD_ID))
             .thenReturn(GetEventsResult.Success(maxEvents))
 
         mockMvc.perform(
             get("/api/v1/events/{key}", maxKey)
-                .with(authentication(mockAuthentication()))
+                .header("Authorization", "Bearer $validToken")
         )
             .andExpect(status().isOk())
     }
@@ -306,7 +298,6 @@ class EventControllerTest {
     @Test
     @DisplayName("Should create event with different field combinations")
     fun shouldCreateEventWithDifferentFieldCombinations() {
-        val guildId = 1000L
         val testCases =
             listOf(
                 createValidPostEventDto(key = "a", value = "x", userId = 1L),
@@ -322,11 +313,12 @@ class EventControllerTest {
                     userId = postDto.userId,
                 )
 
-            `when`(eventService.createEvent(postDto, guildId))
+            `when`(eventService.createEvent(postDto, TEST_GUILD_ID))
                 .thenReturn(CreateEventResult.Success(createdEvent))
 
             mockMvc.perform(
-                post("/api/v1/events").with(authentication(mockAuthentication()))
+                post("/api/v1/events")
+                    .header("Authorization", "Bearer $validToken")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(postDto)),
             )
@@ -352,7 +344,8 @@ class EventControllerTest {
 
         invalidCases.forEach { invalidDto ->
             mockMvc.perform(
-                post("/api/v1/events").with(authentication(mockAuthentication()))
+                post("/api/v1/events")
+                    .header("Authorization", "Bearer $validToken")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(invalidDto)),
             )
