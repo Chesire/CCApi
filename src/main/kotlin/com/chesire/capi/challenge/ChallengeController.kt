@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -33,8 +33,8 @@ class ChallengeController(
     @GetMapping("/user/{userId}")
     fun getChallengesByUser(
         @PathVariable @Positive(message = "User ID must be positive") userId: Long,
-        @AuthenticationPrincipal authentication: JwtAuthentication,
     ): ResponseEntity<List<ChallengeDto>> {
+        val authentication = SecurityContextHolder.getContext().authentication as JwtAuthentication
         val guildId = authentication.guildId
 
         logger.info("Fetching challenges for user")
@@ -59,8 +59,8 @@ class ChallengeController(
     @GetMapping("/{challengeId}")
     fun getChallengeById(
         @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long,
-        @AuthenticationPrincipal authentication: JwtAuthentication,
     ): ResponseEntity<ChallengeDto> {
+        val authentication = SecurityContextHolder.getContext().authentication as JwtAuthentication
         val guildId = authentication.guildId
 
         logger.info("Fetching challenge for challengeId={}", challengeId)
@@ -90,15 +90,19 @@ class ChallengeController(
     @PostMapping(consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun createChallenge(
         @Valid @RequestBody data: PostChallengeDto,
-        @AuthenticationPrincipal authentication: JwtAuthentication,
     ): ResponseEntity<ChallengeDto> {
+        val authentication = SecurityContextHolder.getContext().authentication as JwtAuthentication
         val userId = authentication.userId
         val guildId = authentication.guildId
 
         logger.info("Creating challenge: {}", data.name)
         return when (val result = challengeService.addChallenge(data, userId, guildId)) {
             is PostChallengeResult.Success -> {
-                logger.info("Successfully created challenge: id={}, name={}", result.challenge.id, result.challenge.name)
+                logger.info(
+                    "Successfully created challenge: id={}, name={}",
+                    result.challenge.id,
+                    result.challenge.name
+                )
                 ResponseEntity.ok(result.challenge)
             }
 
@@ -122,8 +126,8 @@ class ChallengeController(
     @DeleteMapping("/{challengeId}")
     fun deleteChallenge(
         @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long,
-        @AuthenticationPrincipal authentication: JwtAuthentication,
     ): ResponseEntity<Void> {
+        val authentication = SecurityContextHolder.getContext().authentication as JwtAuthentication
         val userId = authentication.userId
         val guildId = authentication.guildId
 
