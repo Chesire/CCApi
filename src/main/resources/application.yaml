@@ -3,6 +3,23 @@ spring:
     name: capi
   profiles:
     active: dev
+  servlet:
+    multipart:
+      max-file-size: 1MB
+      max-request-size: 1MB
+  jackson:
+    parser:
+      allow-comments: false
+      allow-yaml-comments: false
+    mapper:
+      accept-case-insensitive-properties: false
+    deserialization:
+      fail-on-unknown-properties: true
+
+server:
+  max-http-header-size: 8KB
+  tomcat:
+    max-http-post-size: 1MB
 
 management:
   endpoints:

@@ -7,9 +7,12 @@ import com.chesire.capi.challenge.service.DeleteChallengeResult
 import com.chesire.capi.challenge.service.GetChallengeResult
 import com.chesire.capi.challenge.service.GetChallengesResult
 import com.chesire.capi.challenge.service.PostChallengeResult
+import com.chesire.capi.config.getAuthenticatedUser
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Positive
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -23,25 +26,29 @@ import org.springframework.web.bind.annotation.RestController
 @Validated
 @RestController
 @RequestMapping("/api/v1/challenges")
-class ChallengeController(private val challengeService: ChallengeService) {
+class ChallengeController(
+    private val challengeService: ChallengeService,
+) {
     @GetMapping("/user/{userId}")
     fun getChallengesByUser(
         @PathVariable @Positive(message = "User ID must be positive") userId: Long,
     ): ResponseEntity<List<ChallengeDto>> {
-        logger.info("Fetching challenges for userId={}", userId)
-        return when (val result = challengeService.getChallenges(userId)) {
+        val guildId = getAuthenticatedUser().guildId
+
+        logger.info("Fetching challenges for user")
+        return when (val result = challengeService.getChallenges(userId, guildId)) {
             is GetChallengesResult.Success -> {
-                logger.info("Successfully fetched {} challenges for userId={}", result.challenges.size, userId)
+                logger.info("Successfully fetched {} challenges", result.challenges.size)
                 ResponseEntity.ok(result.challenges)
             }
 
             GetChallengesResult.NotFound -> {
-                logger.info("No challenges found for userId={}", userId)
+                logger.info("No challenges found for user")
                 ResponseEntity.noContent().build()
             }
 
             GetChallengesResult.UnknownError -> {
-                logger.error("Unknown error fetching challenges for userId={}", userId)
+                logger.error("Unknown error fetching challenges")
                 ResponseEntity.internalServerError().build()
             }
         }
@@ -51,57 +58,63 @@ class ChallengeController(private val challengeService: ChallengeService) {
     fun getChallengeById(
         @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long,
     ): ResponseEntity<ChallengeDto> {
+        val guildId = getAuthenticatedUser().guildId
+
         logger.info("Fetching challenge for challengeId={}", challengeId)
-        return when (val result = challengeService.getChallenge(challengeId)) {
+        return when (val result = challengeService.getChallenge(challengeId, guildId)) {
             is GetChallengeResult.Success -> {
-                logger.info(
-                    "Successfully fetched challenge for challengeId={}, name={}",
-                    challengeId,
-                    result.challenge.name,
-                )
+                logger.info("Successfully fetched challenge: {}", result.challenge.name)
                 ResponseEntity.ok(result.challenge)
             }
 
             GetChallengeResult.NotFound -> {
-                logger.info("Challenge not found for challengeId={}", challengeId)
+                logger.info("Challenge not found: challengeId={}", challengeId)
                 ResponseEntity.noContent().build()
             }
 
+            GetChallengeResult.Unauthorized -> {
+                logger.warn("Unauthorized attempt to fetch challenge: challengeId={}", challengeId)
+                ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+            }
+
             GetChallengeResult.UnknownError -> {
-                logger.error("Unknown error fetching challenge for challengeId={}", challengeId)
+                logger.error("Unknown error fetching challenge: challengeId={}", challengeId)
                 ResponseEntity.internalServerError().build()
             }
         }
     }
 
-    @PostMapping
+    @PostMapping(consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun createChallenge(
         @Valid @RequestBody data: PostChallengeDto,
     ): ResponseEntity<ChallengeDto> {
-        // TODO: Need to pass the users id to validate they can add this challenge
-        logger.info("Creating challenge with name={}", data.name)
-        return when (val result = challengeService.addChallenge(data, 0L)) {
+        val auth = getAuthenticatedUser()
+        val userId = auth.userId
+        val guildId = auth.guildId
+
+        logger.info("Creating challenge: {}", data.name)
+        return when (val result = challengeService.addChallenge(data, userId, guildId)) {
             is PostChallengeResult.Success -> {
                 logger.info(
-                    "Successfully created challenge with id={}, name={}",
+                    "Successfully created challenge: id={}, name={}",
                     result.challenge.id,
-                    result.challenge.name,
+                    result.challenge.name
                 )
                 ResponseEntity.ok(result.challenge)
             }
 
             PostChallengeResult.InvalidData -> {
-                logger.warn("Invalid data provided when trying to create challenge with name={}", data.name)
+                logger.warn("Invalid data provided when creating challenge: {}", data.name)
                 ResponseEntity.badRequest().build()
             }
 
             PostChallengeResult.NotFound -> {
-                logger.warn("Related entity not found when trying to create challenge with name={}", data.name)
+                logger.warn("Related entity not found when creating challenge: {}", data.name)
                 ResponseEntity.noContent().build()
             }
 
             PostChallengeResult.UnknownError -> {
-                logger.error("Unknown error creating challenge with name={}", data.name)
+                logger.error("Unknown error creating challenge: {}", data.name)
                 ResponseEntity.internalServerError().build()
             }
         }
@@ -111,21 +124,29 @@ class ChallengeController(private val challengeService: ChallengeService) {
     fun deleteChallenge(
         @PathVariable @Positive(message = "Challenge ID must be positive") challengeId: Long,
     ): ResponseEntity<Void> {
-        // TODO: Need to pass the users token to validate they can delete this challenge
-        logger.info("Deleting challenge with challengeId={}", challengeId)
-        return when (challengeService.deleteChallenge(challengeId)) {
+        val auth = getAuthenticatedUser()
+        val userId = auth.userId
+        val guildId = auth.guildId
+
+        logger.info("Deleting challenge: {}", challengeId)
+        return when (challengeService.deleteChallenge(challengeId, userId, guildId)) {
             DeleteChallengeResult.Success -> {
-                logger.info("Successfully deleted challenge with challengeId={}", challengeId)
+                logger.info("Successfully deleted challenge: {}", challengeId)
                 ResponseEntity.noContent().build()
             }
 
             DeleteChallengeResult.NotFound -> {
-                logger.warn("Challenge not found when trying to delete challenge with challengeId={}", challengeId)
+                logger.warn("Challenge not found for deletion: {}", challengeId)
                 ResponseEntity.noContent().build()
             }
 
+            DeleteChallengeResult.Unauthorized -> {
+                logger.warn("Unauthorized attempt to delete challenge: {}", challengeId)
+                ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+            }
+
             DeleteChallengeResult.UnknownError -> {
-                logger.error("Unknown error deleting challenge with challengeId={}", challengeId)
+                logger.error("Unknown error deleting challenge: {}", challengeId)
                 ResponseEntity.internalServerError().build()
             }
         }
