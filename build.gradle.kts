@@ -45,6 +45,8 @@ dependencies {
 
     runtimeOnly("com.h2database:h2")
 
+    testImplementation("io.rest-assured:kotlin-extensions:5.5.0")
+    testImplementation("io.rest-assured:rest-assured:5.5.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -65,6 +67,35 @@ allOpen {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.register<Test>("integrationTest") {
+    description = "Runs integration tests against a running server instance"
+    group = "verification"
+
+    useJUnitPlatform {
+        includeTags("integration")
+    }
+
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+
+    shouldRunAfter(tasks.test)
+
+    systemProperty("test.server.url", System.getenv("TEST_SERVER_URL") ?: "http://localhost:8080")
+    systemProperty("test.api.key", System.getenv("TEST_API_KEY") ?: "dev-default-api-key-extended")
+
+    testLogging {
+        events("passed", "skipped", "failed")
+        showStandardStreams = false
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}
+
+tasks.test {
+    useJUnitPlatform {
+        excludeTags("integration")
+    }
 }
 
 ktlint {

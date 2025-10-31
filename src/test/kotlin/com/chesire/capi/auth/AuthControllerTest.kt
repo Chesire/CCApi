@@ -84,7 +84,7 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)),
         )
-            .andExpect(status().isInternalServerError)  // Spring handles missing required headers as 500
-            .andExpect(jsonPath("$.message").value("An unexpected error occurred"))
+            .andExpect(status().isUnauthorized) // Should have matching error if missing x-api-key
+            .andExpect(jsonPath("$.message").value("Authentication failed"))
     }
 }

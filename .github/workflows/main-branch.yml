@@ -66,6 +66,28 @@ jobs:
       - name: Git | Checkout
         uses: actions/checkout@v4
 
+      - name: Java | Setup JDK 23
+        uses: actions/setup-java@v4
+        with:
+          java-version: '23'
+          distribution: 'temurin'
+
+      - name: Gradle | Setup for Integration Tests
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      - name: Gradle | Restore Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            .gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Docker | Setup
         uses: docker/setup-buildx-action@v3
 
@@ -115,6 +137,24 @@ jobs:
             echo "❌ Pushed image health check failed"
             exit 1
           fi
+
+      - name: Gradle | Run Integration Tests
+        run: |
+          ./gradlew integrationTest --no-daemon \
+            -Dtest.server.url=http://localhost:8080 \
+            -Dtest.api.key=dev-default-api-key-extended
+
+      - name: GitHub | Upload Integration Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: main-integration-test-results
+          path: build/reports/tests/integrationTest/
+          retention-days: 30
+
+      - name: Docker | Show Logs on Failure
+        if: failure()
+        run: docker logs ccapi-prod-test
 
       - name: Docker | Cleanup
         if: always()
