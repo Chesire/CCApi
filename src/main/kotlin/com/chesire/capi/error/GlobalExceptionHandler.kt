@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingRequestHeaderException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
@@ -61,6 +62,32 @@ class GlobalExceptionHandler {
             details = "The parameter '${ex.name}' should be of type '${ex.requiredType?.simpleName}'",
         )
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException::class)
+    fun handleMissingRequestHeaderException(ex: MissingRequestHeaderException): ResponseEntity<ErrorResponse> {
+        return when {
+            ex.headerName.equals("X-API-Key", ignoreCase = true) -> {
+                logger.warn("Authentication failed - missing API key")
+                ResponseEntity(
+                    ErrorResponse(
+                        message = "Authentication failed",
+                        details = "Invalid credentials provided"
+                    ),
+                    HttpStatus.UNAUTHORIZED
+                )
+            }
+            else -> {
+                logger.warn("Missing required header: '{}'", ex.headerName)
+                ResponseEntity(
+                    ErrorResponse(
+                        message = "Missing required header",
+                        details = "The request header '${ex.headerName}' is required"
+                    ),
+                    HttpStatus.BAD_REQUEST
+                )
+            }
+        }
     }
 
     @ExceptionHandler(ConstraintViolationException::class)
