@@ -1,6 +1,5 @@
 package com.chesire.capi.event.service
 
-import com.chesire.capi.event.data.EventCountId
 import com.chesire.capi.event.data.EventEntity
 import com.chesire.capi.event.data.EventRepository
 import com.chesire.capi.event.dto.EventDto
@@ -33,7 +32,7 @@ class EventService(
             val totalTime = System.currentTimeMillis() - startTime
             logger.info(
                 "Successfully created event: id={} in {}ms",
-                result.id,
+                result.pk,
                 totalTime
             )
 
@@ -62,19 +61,17 @@ class EventService(
             year = year
         )
         val retrieveTime = System.currentTimeMillis() - retrieveStartTime
-        logger.info("Found previous entity: id='{}' in {}ms", previousEntity?.id, retrieveTime)
+        logger.info("Found previous entity: id='{}' in {}ms", previousEntity?.pk, retrieveTime)
 
         return previousEntity
     }
 
     private fun PostEventDto.toEntity(guildId: Long, year: Int, count: Int = 0): EventEntity =
         EventEntity(
-            id = EventCountId(
-                userId = userId,
-                guildId = guildId,
-                eventName = key,
-                year = year
-            ),
+            userId = userId,
+            guildId = guildId,
+            eventName = key,
+            year = year,
             count = count
         )
 

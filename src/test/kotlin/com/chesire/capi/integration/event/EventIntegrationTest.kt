@@ -24,7 +24,6 @@ class EventIntegrationTest : IntegrationTestBase() {
                 .body("""
                     {
                         "key": "challenge_completed",
-                        "value": "daily_workout_done",
                         "userId": 123456789
                     }
                 """.trimIndent())
@@ -33,9 +32,10 @@ class EventIntegrationTest : IntegrationTestBase() {
             .then()
                 .statusCode(200)
                 .body("key", equalTo("challenge_completed"))
-                .body("value", equalTo("daily_workout_done"))
                 .body("userId", equalTo(123456789))
-                .body("timestamp", notNullValue())
+                .body("guildId", notNullValue())
+                .body("year", notNullValue())
+                .body("count", notNullValue())
         }
 
         @Test
@@ -46,7 +46,6 @@ class EventIntegrationTest : IntegrationTestBase() {
                 .body("""
                     {
                         "key": "",
-                        "value": "some_value",
                         "userId": 123456789
                     }
                 """.trimIndent())
@@ -59,25 +58,6 @@ class EventIntegrationTest : IntegrationTestBase() {
         }
 
         @Test
-        @DisplayName("Should reject event with blank value")
-        fun shouldRejectBlankValue() {
-            given()
-                .spec(givenAuthenticated())
-                .body("""
-                    {
-                        "key": "valid_key",
-                        "value": "",
-                        "userId": 123456789
-                    }
-                """.trimIndent())
-            .`when`()
-                .post("$baseUrl/api/v1/events")
-            .then()
-                .statusCode(400)
-                .body("message", equalTo("Validation failed"))
-        }
-
-        @Test
         @DisplayName("Should reject event with negative user ID")
         fun shouldRejectNegativeUserId() {
             given()
@@ -85,7 +65,6 @@ class EventIntegrationTest : IntegrationTestBase() {
                 .body("""
                     {
                         "key": "valid_key",
-                        "value": "valid_value",
                         "userId": -1
                     }
                 """.trimIndent())
@@ -106,7 +85,6 @@ class EventIntegrationTest : IntegrationTestBase() {
                 .body("""
                     {
                         "key": "$longKey",
-                        "value": "valid_value",
                         "userId": 123456789
                     }
                 """.trimIndent())
@@ -119,28 +97,6 @@ class EventIntegrationTest : IntegrationTestBase() {
         }
 
         @Test
-        @DisplayName("Should reject event with value too long")
-        fun shouldRejectValueTooLong() {
-            val longValue = "a".repeat(201)
-            
-            given()
-                .spec(givenAuthenticated())
-                .body("""
-                    {
-                        "key": "valid_key",
-                        "value": "$longValue",
-                        "userId": 123456789
-                    }
-                """.trimIndent())
-            .`when`()
-                .post("$baseUrl/api/v1/events")
-            .then()
-                .statusCode(400)
-                .body("message", equalTo("Validation failed"))
-                .body("errors[0].field", equalTo("value"))
-        }
-
-        @Test
         @DisplayName("Should reject event without authentication")
         fun shouldRejectUnauthenticated() {
             given()
@@ -148,7 +104,6 @@ class EventIntegrationTest : IntegrationTestBase() {
                 .body("""
                     {
                         "key": "test_key",
-                        "value": "test_value",
                         "userId": 123456789
                     }
                 """.trimIndent())

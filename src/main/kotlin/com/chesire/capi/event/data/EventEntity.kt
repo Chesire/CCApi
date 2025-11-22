@@ -1,34 +1,37 @@
 package com.chesire.capi.event.data
 
 import jakarta.persistence.Column
-import jakarta.persistence.Embeddable
-import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.Id
 import jakarta.persistence.Table
-import java.io.Serializable
+import org.hibernate.annotations.NaturalId
 
 @Entity
 @Table(name = "events")
 data class EventEntity(
-    @EmbeddedId
-    val id: EventCountId,
+    @Id
+    @GeneratedValue
+    val pk: Long = 0,
+
+    @Column(name = "user_id")
+    @NaturalId
+    val userId: Long,
+
+    @Column(name = "guild_id")
+    @NaturalId
+    val guildId: Long,
+
+    @Column(name = "event_name")
+    @NaturalId
+    val eventName: String,
+
+    @Column(name = "year")
+    @NaturalId
+    val year: Int,
+
     @Column(name = "count")
     val count: Int
 ) {
-    val userId: Long get() = id.userId
-    val guildId: Long get() = id.guildId
-    val eventName: String get() = id.eventName
-    val year: Int get() = id.year
+    val id: String get() = "$userId-$guildId-$eventName-$year"
 }
-
-@Embeddable
-data class EventCountId(
-    @Column(name = "user_id")
-    val userId: Long,
-    @Column(name = "guild_id")
-    val guildId: Long,
-    @Column(name = "event_name")
-    val eventName: String,
-    @Column(name = "year")
-    val year: Int
-) : Serializable
