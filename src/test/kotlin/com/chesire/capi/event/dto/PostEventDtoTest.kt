@@ -3,13 +3,13 @@ package com.chesire.capi.event.dto
 import jakarta.validation.ConstraintViolation
 import jakarta.validation.Validation
 import jakarta.validation.Validator
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 @DisplayName("PostEventDto Validation Tests")
 class PostEventDtoTest {
@@ -41,10 +41,7 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should pass validation with minimum valid lengths")
         fun shouldPassValidationWithMinimumLengths() {
-            val dto =
-                validDto().copy(
-                    key = "A",
-                )
+            val dto = validDto().copy(key = "A")
 
             val violations = dto.validate()
 
@@ -54,10 +51,7 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should pass validation with maximum valid lengths")
         fun shouldPassValidationWithMaximumLengths() {
-            val dto =
-                validDto().copy(
-                    key = "A".repeat(30),
-                )
+            val dto = validDto().copy(key = "A".repeat(30))
 
             val violations = dto.validate()
 
@@ -185,11 +179,7 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should report all validation errors when multiple fields are invalid")
         fun shouldReportAllValidationErrors() {
-            val dto =
-                PostEventDto(
-                    key = "",
-                    userId = 0L,
-                )
+            val dto = PostEventDto(key = "", userId = 0L)
 
             val violations = dto.validate()
 
@@ -203,11 +193,7 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should handle maximum violations across all fields")
         fun shouldHandleMaximumViolationsAcrossAllFields() {
-            val dto =
-                PostEventDto(
-                    key = "X".repeat(50),
-                    userId = -100L,
-                )
+            val dto = PostEventDto(key = "X".repeat(50), userId = -100L)
 
             val violations = dto.validate()
 
@@ -223,14 +209,13 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should accept keys with special characters")
         fun shouldAcceptKeysWithSpecialCharacters() {
-            val specialKeys =
-                listOf(
-                    "challenge_failed",
-                    "event-type-123",
-                    "user_action!",
-                    "test&go",
-                    "action#1",
-                )
+            val specialKeys = listOf(
+                "challenge_failed",
+                "event-type-123",
+                "user_action!",
+                "test&go",
+                "action#1",
+            )
 
             specialKeys.forEach { specialKey ->
                 val dto = validDto().copy(key = specialKey)
@@ -248,13 +233,12 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should test exact key length boundaries")
         fun shouldTestExactKeyLengthBoundaries() {
-            val boundaryTests =
-                mapOf(
-                    0 to false,
-                    1 to true,
-                    30 to true,
-                    31 to false,
-                )
+            val boundaryTests = mapOf(
+                0 to false,
+                1 to true,
+                30 to true,
+                31 to false,
+            )
 
             boundaryTests.forEach { (length, shouldBeValid) ->
                 val dto = validDto().copy(key = "A".repeat(length))
@@ -277,13 +261,12 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should test exact userId boundaries")
         fun shouldTestExactUserIdBoundaries() {
-            val boundaryTests =
-                mapOf(
-                    -1L to false,
-                    0L to false,
-                    1L to true,
-                    Long.MAX_VALUE to true,
-                )
+            val boundaryTests = mapOf(
+                -1L to false,
+                0L to false,
+                1L to true,
+                Long.MAX_VALUE to true,
+            )
 
             boundaryTests.forEach { (userId, shouldBeValid) ->
                 val dto = validDto().copy(userId = userId)
@@ -339,25 +322,22 @@ class PostEventDtoTest {
     }
 
     companion object {
-        fun validDto() =
-            PostEventDto(
-                key = "challenge_completed",
-                userId = 123L,
-            )
+        fun validDto() = PostEventDto(
+            key = "challenge_completed",
+            userId = 123L,
+        )
 
-        val invalidKeys =
-            listOf(
-                "" to "empty string",
-                "A".repeat(31) to "too long",
-                "   " to "whitespace only",
-                "\t\n" to "tabs and newlines",
-            )
+        val invalidKeys = listOf(
+            "" to "empty string",
+            "A".repeat(31) to "too long",
+            "   " to "whitespace only",
+            "\t\n" to "tabs and newlines",
+        )
 
-        val invalidUserIds =
-            listOf(
-                -100L to "large negative",
-                -1L to "small negative",
-                0L to "zero value",
-            )
+        val invalidUserIds = listOf(
+            -100L to "large negative",
+            -1L to "small negative",
+            0L to "zero value",
+        )
     }
 }

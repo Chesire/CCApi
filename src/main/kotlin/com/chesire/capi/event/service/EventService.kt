@@ -30,11 +30,7 @@ class EventService(
 
             val dto = result.toDto()
             val totalTime = System.currentTimeMillis() - startTime
-            logger.info(
-                "Successfully created event: id={} in {}ms",
-                result.pk,
-                totalTime
-            )
+            logger.info("Successfully created event: id={} in {}ms", result.pk, totalTime)
 
             CreateEventResult.Success(dto)
         } catch (ex: Exception) {
