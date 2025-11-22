@@ -1,5 +1,6 @@
 package com.chesire.capi.event.service
 
+import com.chesire.capi.event.data.EventCountId
 import com.chesire.capi.event.data.EventEntity
 import com.chesire.capi.event.data.EventRepository
 import com.chesire.capi.event.dto.EventDto
@@ -15,20 +16,23 @@ class EventService(
     fun createEvent(data: PostEventDto, guildId: Long): CreateEventResult {
         logger.info("Starting event creation: key='{}'", data.key)
         val startTime = System.currentTimeMillis()
+        val year = LocalDateTime.now().year
 
         return try {
-            val entity = data.toEntity(guildId)
+            val previousEntity = getPreviousEntity(data = data, guildId = guildId, year = year)
+            val entity = previousEntity
+                ?.copy(count = previousEntity.count + 1)
+                ?: data.toEntity(guildId = guildId, year = year, count = 0)
             val saveStartTime = System.currentTimeMillis()
             val result = repository.save(entity)
             val saveTime = System.currentTimeMillis() - saveStartTime
-            logger.debug("Database save completed in {}ms: eventId={}", saveTime, result.id)
+            logger.debug("Database save completed in {}ms: eventName={}", saveTime, result.eventName)
 
             val dto = result.toDto()
             val totalTime = System.currentTimeMillis() - startTime
             logger.info(
-                "Successfully created event: eventId={}, key='{}' in {}ms",
+                "Successfully created event: id={} in {}ms",
                 result.id,
-                result.eventKey,
                 totalTime
             )
 
@@ -45,6 +49,21 @@ class EventService(
             )
             CreateEventResult.UnknownError
         }
+    }
+
+    private fun getPreviousEntity(data: PostEventDto, guildId: Long, year: Int): EventEntity? {
+        val retrieveStartTime = System.currentTimeMillis()
+        logger.info("Finding previous entity: userId='{}', guildId='{}', key='{}'", data.userId, guildId, data.key)
+        val previousEntity = repository.findByUserIdAndGuildIdAndEventNameAndYear(
+            userId = data.userId,
+            guildId = guildId,
+            eventName = data.key,
+            year = year
+        )
+        val retrieveTime = System.currentTimeMillis() - retrieveStartTime
+        logger.info("Found previous entity: id='{}' in {}ms", previousEntity?.id, retrieveTime)
+
+        return previousEntity
     }
 
     fun getEventsByKey(key: String, guildId: Long): GetEventsResult {
@@ -75,20 +94,28 @@ class EventService(
         }
     }
 
-    private fun PostEventDto.toEntity(guildId: Long): EventEntity =
+    private fun PostEventDto.toEntity(guildId: Long, year: Int, count: Int = 0): EventEntity =
         EventEntity(
-            eventKey = key,
-            eventValue = value,
+            id = EventCountId(
+                userId = userId,
+                guildId = guildId,
+                eventName = key,
+                year = year
+            ),
             userId = userId,
-            guildId = guildId
+            guildId = guildId,
+            eventName = key,
+            year = year,
+            count = count
         )
 
     private fun EventEntity.toDto(): EventDto =
         EventDto(
-            key = eventKey,
-            value = eventValue,
             userId = userId,
-            timestamp = createdAt ?: LocalDateTime.now(),
+            guildId = guildId,
+            key = eventName,
+            count = count,
+            year = year
         )
 
     companion object {
