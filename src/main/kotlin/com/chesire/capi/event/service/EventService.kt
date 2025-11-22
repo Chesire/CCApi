@@ -75,10 +75,6 @@ class EventService(
                 eventName = key,
                 year = year
             ),
-            userId = userId,
-            guildId = guildId,
-            eventName = key,
-            year = year,
             count = count
         )
 
