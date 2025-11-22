@@ -5,7 +5,6 @@ import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import java.io.Serializable
-import java.time.LocalDateTime
 
 @Entity
 data class EventEntity(
@@ -19,8 +18,7 @@ data class EventEntity(
     val eventName: String,
     @Id
     val year: Int,
-    val count: Int,
-    var lastUpdated: LocalDateTime = LocalDateTime.now()
+    val count: Int
 )
 
 @Embeddable
