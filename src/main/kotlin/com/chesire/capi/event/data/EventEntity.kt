@@ -10,12 +10,21 @@ import org.hibernate.annotations.CreationTimestamp
 @Entity
 data class EventEntity(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
-    val eventKey: String,
-    val eventValue: String,
+    val userId: Long,
+    @Id
+    val guildId: Long,
+    @Id
+    val eventName: String,
+    @Id
+    val year: Int,
+    val count: Int,
+    var lastUpdated: LocalDateTime = LocalDateTime.now()
+)
+
+@Embeddable
+data class EventCountId(
     val userId: Long,
     val guildId: Long,
-    @CreationTimestamp
-    val createdAt: LocalDateTime? = null,
-)
+    val eventName: String,
+    val year: Int
+) : Serializable
