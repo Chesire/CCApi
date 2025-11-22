@@ -23,6 +23,7 @@ class EventService(
             val entity = previousEntity
                 ?.copy(count = previousEntity.count + 1)
                 ?: data.toEntity(guildId = guildId, year = year, count = 0)
+
             val saveStartTime = System.currentTimeMillis()
             val result = repository.save(entity)
             val saveTime = System.currentTimeMillis() - saveStartTime
@@ -66,34 +67,6 @@ class EventService(
         return previousEntity
     }
 
-    fun getEventsByKey(key: String, guildId: Long): GetEventsResult {
-        logger.debug("Starting getEventsByKey for key='{}'", key)
-        val startTime = System.currentTimeMillis()
-
-        return try {
-            val events = repository.findByEventKeyAndGuildId(key, guildId)
-            val queryTime = System.currentTimeMillis() - startTime
-            logger.debug("Database query completed in {}ms, found {} events", queryTime, events.size)
-
-            val eventDtos = events.map { it.toDto() }
-            val totalTime = System.currentTimeMillis() - startTime
-            logger.info("Successfully retrieved and mapped {} events in {}ms", eventDtos.size, totalTime)
-
-            GetEventsResult.Success(eventDtos)
-        } catch (ex: Exception) {
-            val totalTime = System.currentTimeMillis() - startTime
-            logger.error(
-                "Error retrieving events for key='{}' after {}ms: {} - {}",
-                key,
-                totalTime,
-                ex.javaClass.simpleName,
-                ex.message,
-                ex,
-            )
-            GetEventsResult.UnknownError
-        }
-    }
-
     private fun PostEventDto.toEntity(guildId: Long, year: Int, count: Int = 0): EventEntity =
         EventEntity(
             id = EventCountId(
@@ -129,12 +102,4 @@ sealed interface CreateEventResult {
     ) : CreateEventResult
 
     object UnknownError : CreateEventResult
-}
-
-sealed interface GetEventsResult {
-    data class Success(
-        val events: List<EventDto>,
-    ) : GetEventsResult
-
-    object UnknownError : GetEventsResult
 }
