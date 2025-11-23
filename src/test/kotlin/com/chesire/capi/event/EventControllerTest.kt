@@ -63,7 +63,7 @@ class EventControllerTest {
 
     private fun createValidPostEventDto(
         key: String = "challenge_completed",
-        userId: Long = TEST_USER_ID,
+        userId: String = TEST_USER_ID,
     ) = PostEventDto(
         key = key,
         userId = userId,
@@ -71,8 +71,8 @@ class EventControllerTest {
 
     private fun createValidEventDto(
         key: String = "challenge_completed",
-        userId: Long = TEST_USER_ID,
-        guildId: Long = TEST_GUILD_ID,
+        userId: String = TEST_USER_ID,
+        guildId: String = TEST_GUILD_ID,
         year: Int = 2024,
         count: Int = 0,
     ) = EventDto(
@@ -84,8 +84,8 @@ class EventControllerTest {
     )
 
     companion object {
-        private const val TEST_USER_ID = 123L
-        private const val TEST_GUILD_ID = 1000L
+        private const val TEST_USER_ID = "123456789"
+        private const val TEST_GUILD_ID = "987654321"
     }
 
     @Nested

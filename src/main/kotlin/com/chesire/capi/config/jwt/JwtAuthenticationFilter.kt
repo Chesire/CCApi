@@ -33,8 +33,8 @@ class JwtAuthenticationFilter(
             guildId != null &&
             SecurityContextHolder.getContext().authentication == null
         ) {
-            MDC.put("userId", userId.toString())
-            MDC.put("guildId", guildId.toString())
+            MDC.put("userId", userId)
+            MDC.put("guildId", guildId)
 
             if (jwtService.isTokenValid(jwt)) {
                 val authToken = JwtAuthentication(

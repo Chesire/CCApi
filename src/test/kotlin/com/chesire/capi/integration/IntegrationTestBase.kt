@@ -75,11 +75,11 @@ abstract class IntegrationTestBase {
     /**
      * Obtains a JWT token from the auth endpoint.
      */
-    protected fun obtainJwtToken(userId: Long = 123456789, guildId: Long = 987654321): String {
+    protected fun obtainJwtToken(userId: String = "123456789", guildId: String = "987654321"): String {
         val response = RestAssured.given()
             .contentType(ContentType.JSON)
             .header("X-Api-Key", apiKey)
-            .body("""{"userId": $userId, "guildId": $guildId}""")
+            .body("""{"userId": "$userId", "guildId": "$guildId"}""")
             .post("$baseUrl/api/v1/auth/token")
             .then()
             .statusCode(200)

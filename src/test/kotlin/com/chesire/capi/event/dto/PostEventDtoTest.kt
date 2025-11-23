@@ -61,7 +61,7 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should pass validation with minimum valid userId")
         fun shouldPassValidationWithMinimumUserId() {
-            val dto = validDto().copy(userId = 1L)
+            val dto = validDto().copy(userId = "1234567")
 
             val violations = dto.validate()
 
@@ -127,23 +127,23 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should reject zero userId")
         fun shouldRejectZeroUserId() {
-            val dto = validDto().copy(userId = 0L)
+            val dto = validDto().copy(userId = "000000")
 
             val violations = dto.validate()
 
             assertEquals(1, violations.size)
-            assertTrue(violations.any { it.message.contains("greater than 0") || it.message.contains("positive") })
+            assertTrue(violations.any { it.message.contains("valid Discord ID") })
         }
 
         @Test
         @DisplayName("Should reject negative userId")
         fun shouldRejectNegativeUserId() {
-            val dto = validDto().copy(userId = -1L)
+            val dto = validDto().copy(userId = "abc1234")
 
             val violations = dto.validate()
 
             assertEquals(1, violations.size)
-            assertTrue(violations.any { it.message.contains("greater than 0") || it.message.contains("positive") })
+            assertTrue(violations.any { it.message.contains("valid Discord ID") })
         }
 
         @Test
@@ -156,8 +156,8 @@ class PostEventDtoTest {
 
                 assertFalse(violations.isEmpty(), "Expected violations for $description")
                 assertTrue(
-                    violations.any { it.message.contains("greater than 0") || it.message.contains("positive") },
-                    "Expected positive validation message for $description. Got: ${violations.map { it.message }}",
+                    violations.any { it.message.contains("valid Discord ID") },
+                    "Expected Discord ID validation message for $description. Got: ${violations.map { it.message }}",
                 )
             }
         }
@@ -165,7 +165,7 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should accept large positive userId")
         fun shouldAcceptLargePositiveUserId() {
-            val dto = validDto().copy(userId = Long.MAX_VALUE)
+            val dto = validDto().copy(userId = "12345678901234567890")
 
             val violations = dto.validate()
 
@@ -179,7 +179,7 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should report all validation errors when multiple fields are invalid")
         fun shouldReportAllValidationErrors() {
-            val dto = PostEventDto(key = "", userId = 0L)
+            val dto = PostEventDto(key = "", userId = "123")
 
             val violations = dto.validate()
 
@@ -193,13 +193,13 @@ class PostEventDtoTest {
         @Test
         @DisplayName("Should handle maximum violations across all fields")
         fun shouldHandleMaximumViolationsAcrossAllFields() {
-            val dto = PostEventDto(key = "X".repeat(50), userId = -100L)
+            val dto = PostEventDto(key = "X".repeat(50), userId = "abc")
 
             val violations = dto.validate()
 
             assertEquals(2, violations.size)
             assertTrue(violations.hasMessageContaining("key"))
-            assertTrue(violations.any { it.message.contains("greater than 0") || it.message.contains("positive") })
+            assertTrue(violations.any { it.message.contains("valid Discord ID") })
         }
     }
 
@@ -262,10 +262,10 @@ class PostEventDtoTest {
         @DisplayName("Should test exact userId boundaries")
         fun shouldTestExactUserIdBoundaries() {
             val boundaryTests = mapOf(
-                -1L to false,
-                0L to false,
-                1L to true,
-                Long.MAX_VALUE to true,
+                "123456" to false,
+                "1234567" to true,
+                "12345678901234567890" to true,
+                "123456789012345678901" to false,
             )
 
             boundaryTests.forEach { (userId, shouldBeValid) ->
@@ -277,7 +277,7 @@ class PostEventDtoTest {
                     assertTrue(violations.isEmpty(), "Expected no violations for userId: $userId")
                 } else {
                     assertFalse(violations.isEmpty(), "Expected violations for userId: $userId")
-                    assertTrue(violations.any { it.message.contains("greater than 0") || it.message.contains("positive") })
+                    assertTrue(violations.any { it.message.contains("valid Discord ID") })
                 }
             }
         }
@@ -324,7 +324,7 @@ class PostEventDtoTest {
     companion object {
         fun validDto() = PostEventDto(
             key = "challenge_completed",
-            userId = 123L,
+            userId = "123456789",
         )
 
         val invalidKeys = listOf(
@@ -335,9 +335,9 @@ class PostEventDtoTest {
         )
 
         val invalidUserIds = listOf(
-            -100L to "large negative",
-            -1L to "small negative",
-            0L to "zero value",
+            "123" to "too short",
+            "12345" to "too short",
+            "123456789012345678901" to "too long",
         )
     }
 }

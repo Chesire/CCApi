@@ -16,11 +16,11 @@ data class EventEntity(
 
     @Column(name = "user_id")
     @NaturalId
-    val userId: Long,
+    val userId: String,
 
     @Column(name = "guild_id")
     @NaturalId
-    val guildId: Long,
+    val guildId: String,
 
     @Column(name = "event_name")
     @NaturalId

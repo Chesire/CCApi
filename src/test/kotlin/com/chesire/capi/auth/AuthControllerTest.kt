@@ -38,8 +38,8 @@ class AuthControllerTest {
     @DisplayName("Should reject invalid API key due to validation")
     fun shouldRejectInvalidApiKeyDueToValidation() {
         val request = AuthRequestDto(
-            userId = 123456789012345678L,
-            guildId = 987654321012345678L,
+            userId = "123456789012345678",
+            guildId = "987654321012345678",
         )
 
         mockMvc.perform(
@@ -57,8 +57,8 @@ class AuthControllerTest {
     @DisplayName("Should reject wrong API key value")
     fun shouldRejectWrongApiKeyValue() {
         val request = AuthRequestDto(
-            userId = 123456789012345678L,
-            guildId = 987654321012345678L,
+            userId = "123456789012345678",
+            guildId = "987654321012345678",
         )
 
         mockMvc.perform(
@@ -75,8 +75,8 @@ class AuthControllerTest {
     @DisplayName("Should reject missing API key header")
     fun shouldRejectMissingApiKeyHeader() {
         val request = AuthRequestDto(
-            userId = 123456789012345678L,
-            guildId = 987654321012345678L,
+            userId = "123456789012345678",
+            guildId = "987654321012345678",
         )
 
         mockMvc.perform(

@@ -9,6 +9,8 @@ import com.chesire.capi.challenge.service.GetChallengesResult
 import com.chesire.capi.challenge.service.PostChallengeResult
 import com.chesire.capi.config.getAuthenticatedUser
 import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Positive
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -31,7 +33,13 @@ class ChallengeController(
 ) {
     @GetMapping("/user/{userId}")
     fun getChallengesByUser(
-        @PathVariable @Positive(message = "User ID must be positive") userId: Long,
+        @PathVariable
+        @NotBlank(message = "UserId is required and cannot be blank")
+        @Pattern(
+            regexp = "^\\d{7,20}$",
+            message = "User ID must be a valid Discord ID (between 7 and 20 digits)"
+        )
+        userId: String,
     ): ResponseEntity<List<ChallengeDto>> {
         val guildId = getAuthenticatedUser().guildId
 

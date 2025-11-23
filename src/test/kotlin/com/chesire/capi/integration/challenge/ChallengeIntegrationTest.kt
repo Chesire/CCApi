@@ -275,7 +275,7 @@ class ChallengeIntegrationTest : IntegrationTestBase() {
         }
     }
 
-    private fun createTestChallenge(name: String): Long {
+    private fun createTestChallenge(name: String): String {
         return given()
             .spec(givenAuthenticated())
             .body("""
@@ -292,6 +292,6 @@ class ChallengeIntegrationTest : IntegrationTestBase() {
             .statusCode(200)
             .extract()
             .path<Int>("id")
-            .toLong()
+            .toString()
     }
 }
