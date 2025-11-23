@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 class ChallengeService(
     private val repository: ChallengeRepository,
 ) {
-    fun getChallenges(userId: Long, guildId: Long): GetChallengesResult {
+    fun getChallenges(userId: String, guildId: String): GetChallengesResult {
         logger.debug("Starting getChallenges")
         val startTime = System.currentTimeMillis()
 
@@ -48,7 +48,7 @@ class ChallengeService(
         }
     }
 
-    fun getChallenge(challengeId: Long, guildId: Long): GetChallengeResult {
+    fun getChallenge(challengeId: Long, guildId: String): GetChallengeResult {
         logger.debug("Starting getChallenge for challengeId={}", challengeId)
         val startTime = System.currentTimeMillis()
 
@@ -98,8 +98,8 @@ class ChallengeService(
 
     fun addChallenge(
         data: PostChallengeDto,
-        userId: Long,
-        guildId: Long
+        userId: String,
+        guildId: String
     ): PostChallengeResult {
         logger.info("Starting challenge creation: name='{}', timeFrame={}", data.name, data.timeFrame)
         val startTime = System.currentTimeMillis()
@@ -143,7 +143,7 @@ class ChallengeService(
         }
     }
 
-    fun deleteChallenge(challengeId: Long, userId: Long, guildId: Long): DeleteChallengeResult {
+    fun deleteChallenge(challengeId: Long, userId: String, guildId: String): DeleteChallengeResult {
         logger.info("Starting challenge deletion: challengeId={}", challengeId)
         val startTime = System.currentTimeMillis()
 
@@ -151,7 +151,11 @@ class ChallengeService(
             val currentChallenge = retrieveChallenge(challengeId)
             if (currentChallenge == null) {
                 val totalTime = System.currentTimeMillis() - startTime
-                logger.info("Challenge not found for deletion: challengeId={} (total time {}ms)", challengeId, totalTime)
+                logger.info(
+                    "Challenge not found for deletion: challengeId={} (total time {}ms)",
+                    challengeId,
+                    totalTime
+                )
                 DeleteChallengeResult.NotFound
             } else if (currentChallenge.userId != userId || currentChallenge.guildId != guildId) {
                 val totalTime = System.currentTimeMillis() - startTime
@@ -200,7 +204,7 @@ class ChallengeService(
         return entity
     }
 
-    private fun PostChallengeDto.toEntity(userId: Long, guildId: Long) =
+    private fun PostChallengeDto.toEntity(userId: String, guildId: String) =
         ChallengeEntity(
             userId = userId,
             guildId = guildId,
