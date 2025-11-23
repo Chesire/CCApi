@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 class EventService(
     private val repository: EventRepository,
 ) {
-    fun createEvent(data: PostEventDto, guildId: Long): CreateEventResult {
+    fun createEvent(data: PostEventDto, guildId: String): CreateEventResult {
         logger.info("Starting event creation: key='{}'", data.key)
         val startTime = System.currentTimeMillis()
         val year = LocalDateTime.now().year
@@ -47,7 +47,7 @@ class EventService(
         }
     }
 
-    private fun getPreviousEntity(data: PostEventDto, guildId: Long, year: Int): EventEntity? {
+    private fun getPreviousEntity(data: PostEventDto, guildId: String, year: Int): EventEntity? {
         val retrieveStartTime = System.currentTimeMillis()
         logger.info("Finding previous entity: userId='{}', guildId='{}', key='{}'", data.userId, guildId, data.key)
         val previousEntity = repository.findByUserIdAndGuildIdAndEventNameAndYear(
@@ -62,7 +62,7 @@ class EventService(
         return previousEntity
     }
 
-    private fun PostEventDto.toEntity(guildId: Long, year: Int, count: Int = 0): EventEntity =
+    private fun PostEventDto.toEntity(guildId: String, year: Int, count: Int = 0): EventEntity =
         EventEntity(
             userId = userId,
             guildId = guildId,
