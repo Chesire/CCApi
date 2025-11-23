@@ -26,7 +26,7 @@ data class EventEntity(
     @NaturalId
     val eventName: String,
 
-    @Column(name = "year")
+    @Column(name = "event_year")
     @NaturalId
     val year: Int,
 
