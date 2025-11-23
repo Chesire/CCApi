@@ -12,8 +12,8 @@ data class PostEventDto(
 
     @field:NotBlank(message = "UserId is required and cannot be blank")
     @field:Pattern(
-        regexp = "^\\d{1,20}$",
-        message = "User ID must be a valid Discord ID ((up to 20 digits)"
+        regexp = "^\\d{7,20}$",
+        message = "User ID must be a valid Discord ID (between 7 and 20 digits)"
     )
     val userId: String,
 )
