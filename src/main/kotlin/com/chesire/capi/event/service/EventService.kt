@@ -26,11 +26,11 @@ class EventService(
             val saveStartTime = System.currentTimeMillis()
             val result = repository.save(entity)
             val saveTime = System.currentTimeMillis() - saveStartTime
-            logger.debug("Database save completed in {}ms: eventName={}", saveTime, result.eventName)
+            logger.debug("Database save completed in {}ms: id={}", saveTime, result.id)
 
             val dto = result.toDto()
             val totalTime = System.currentTimeMillis() - startTime
-            logger.info("Successfully created event: id={} in {}ms", result.pk, totalTime)
+            logger.info("Successfully created event: id={} in {}ms", result.id, totalTime)
 
             CreateEventResult.Success(dto)
         } catch (ex: Exception) {
