@@ -30,8 +30,8 @@ class JwtServiceTest {
         @Test
         @DisplayName("Should generate valid JWT token with all claims")
         fun shouldGenerateValidTokenWithAllClaims() {
-            val userId = 123456789012345678L
-            val guildId = 987654321012345678L
+            val userId = "123456789012345678"
+            val guildId = "987654321012345678"
 
             val token = jwtService.generateToken(userId, guildId)
 
@@ -43,8 +43,8 @@ class JwtServiceTest {
         @Test
         @DisplayName("Should generate different tokens for different users")
         fun shouldGenerateDifferentTokensForDifferentUsers() {
-            val token1 = jwtService.generateToken(123L, 456L)
-            val token2 = jwtService.generateToken(789L, 456L)
+            val token1 = jwtService.generateToken("123", "456")
+            val token2 = jwtService.generateToken("789", "456")
 
             assertTrue(token1 != token2)
         }
@@ -57,7 +57,7 @@ class JwtServiceTest {
 
         @BeforeEach
         fun setUp() {
-            validToken = jwtService.generateToken(123456789012345678L, 987654321012345678L)
+            validToken = jwtService.generateToken("123456789012345678", "987654321012345678")
         }
 
         @Test
@@ -65,7 +65,7 @@ class JwtServiceTest {
         fun shouldExtractUserIdCorrectly() {
             val extractedUserId = jwtService.extractUserId(validToken)
 
-            assertEquals(123456789012345678L, extractedUserId)
+            assertEquals("123456789012345678", extractedUserId)
         }
 
         @Test
@@ -73,7 +73,7 @@ class JwtServiceTest {
         fun shouldExtractGuildIdCorrectly() {
             val extractedGuildId = jwtService.extractGuildId(validToken)
 
-            assertEquals(987654321012345678L, extractedGuildId)
+            assertEquals("987654321012345678", extractedGuildId)
         }
 
         @Test
@@ -101,7 +101,7 @@ class JwtServiceTest {
 
         @BeforeEach
         fun setUp() {
-            validToken = jwtService.generateToken(123456789012345678L, 987654321012345678L)
+            validToken = jwtService.generateToken("123456789012345678", "987654321012345678")
         }
 
         @Test

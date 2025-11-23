@@ -116,14 +116,14 @@ class ChallengeControllerTest {
         @Test
         @DisplayName("Should return 400 for negative ID")
         fun shouldReturnBadRequestForNegativeId() {
-            authenticatedGet("/api/v1/challenges/{challengeId}", -1L)
+            authenticatedGet("/api/v1/challenges/{challengeId}", "-1")
                 .andExpect(status().isBadRequest)
         }
 
         @Test
         @DisplayName("Should return 400 for zero ID")
         fun shouldReturnBadRequestForZeroId() {
-            authenticatedGet("/api/v1/challenges/{challengeId}", 0L)
+            authenticatedGet("/api/v1/challenges/{challengeId}", "0")
                 .andExpect(status().isBadRequest)
         }
     }
@@ -135,7 +135,7 @@ class ChallengeControllerTest {
         @Test
         @DisplayName("Should return 200 with challenges when found")
         fun shouldReturnChallengesWhenFound() {
-            `when`(challengeService.getChallenges(1L, TEST_GUILD_ID))
+            `when`(challengeService.getChallenges(TEST_USER_ID, TEST_GUILD_ID))
                 .thenReturn(
                     GetChallengesResult.Success(
                         listOf(
@@ -144,41 +144,41 @@ class ChallengeControllerTest {
                     )
                 )
 
-            authenticatedGet("/api/v1/challenges/user/{userId}", 1L)
+            authenticatedGet("/api/v1/challenges/user/{userId}", TEST_USER_ID)
                 .andExpect(status().isOk)
         }
 
         @Test
         @DisplayName("Should return 204 when no challenges found")
         fun shouldReturnNoContentWhenNoChallengesFound() {
-            `when`(challengeService.getChallenges(1L, TEST_GUILD_ID))
+            `when`(challengeService.getChallenges(TEST_USER_ID, TEST_GUILD_ID))
                 .thenReturn(GetChallengesResult.NotFound)
 
-            authenticatedGet("/api/v1/challenges/user/{userId}", 1L)
+            authenticatedGet("/api/v1/challenges/user/{userId}", TEST_USER_ID)
                 .andExpect(status().isNoContent)
         }
 
         @Test
         @DisplayName("Should return 500 on unknown error")
         fun shouldReturnInternalServerErrorOnUnknownError() {
-            `when`(challengeService.getChallenges(1L, TEST_GUILD_ID))
+            `when`(challengeService.getChallenges(TEST_USER_ID, TEST_GUILD_ID))
                 .thenReturn(GetChallengesResult.UnknownError)
 
-            authenticatedGet("/api/v1/challenges/user/{userId}", 1L)
+            authenticatedGet("/api/v1/challenges/user/{userId}", TEST_USER_ID)
                 .andExpect(status().isInternalServerError)
         }
 
         @Test
         @DisplayName("Should return 400 for negative ID")
         fun shouldReturnBadRequestForNegativeId() {
-            authenticatedGet("/api/v1/challenges/user/{userId}", -1L)
+            authenticatedGet("/api/v1/challenges/user/{userId}", "-1")
                 .andExpect(status().isBadRequest)
         }
 
         @Test
         @DisplayName("Should return 400 for zero ID")
         fun shouldReturnBadRequestForZeroId() {
-            authenticatedGet("/api/v1/challenges/user/{userId}", 0L)
+            authenticatedGet("/api/v1/challenges/user/{userId}", "0")
                 .andExpect(status().isBadRequest)
         }
     }
@@ -290,20 +290,20 @@ class ChallengeControllerTest {
         @Test
         @DisplayName("Should return 400 for negative ID")
         fun shouldReturnBadRequestForNegativeId() {
-            authenticatedDelete("/api/v1/challenges/{challengeId}", -1L)
+            authenticatedDelete("/api/v1/challenges/{challengeId}", "-1")
                 .andExpect(status().isBadRequest)
         }
 
         @Test
         @DisplayName("Should return 400 for zero ID")
         fun shouldReturnBadRequestForZeroId() {
-            authenticatedDelete("/api/v1/challenges/{challengeId}", 0L)
+            authenticatedDelete("/api/v1/challenges/{challengeId}", "0")
                 .andExpect(status().isBadRequest)
         }
     }
 
     companion object {
-        private const val TEST_USER_ID = 123L
-        private const val TEST_GUILD_ID = 456L
+        private const val TEST_USER_ID = "123456789"
+        private const val TEST_GUILD_ID = "987654321"
     }
 }
