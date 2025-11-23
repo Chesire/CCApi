@@ -1,10 +1,9 @@
 package com.chesire.capi.event.dto
 
-import java.time.LocalDateTime
-
 data class EventDto(
-    val key: String,
-    val value: String,
     val userId: Long,
-    val timestamp: LocalDateTime,
+    val guildId: Long,
+    val key: String,
+    val year: Int,
+    val count: Int
 )
