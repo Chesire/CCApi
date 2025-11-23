@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ChallengeRepository : JpaRepository<ChallengeEntity, Long> {
-    fun findByUserIdAndGuildId(userId: Long, guildId: Long): List<ChallengeEntity>
+    fun findByUserIdAndGuildId(userId: String, guildId: String): List<ChallengeEntity>
 }

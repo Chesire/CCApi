@@ -13,8 +13,8 @@ data class ChallengeEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-    val userId: Long,
-    val guildId: Long,
+    val userId: String,
+    val guildId: String,
     val name: String,
     val description: String,
     @Enumerated(EnumType.STRING)
