@@ -17,7 +17,7 @@ class TokenRateLimiter {
     private val windowMs = 3600000L // 1 hour
     private val maxEntries = 10000
 
-    fun isAllowed(apiKey: String, userId: Long, guildId: Long): Boolean {
+    fun isAllowed(apiKey: String, userId: String, guildId: String): Boolean {
         return isAllowedByApiKey(apiKey) && isAllowedByGuild(guildId) && isAllowedByUser(userId)
     }
 
@@ -25,11 +25,11 @@ class TokenRateLimiter {
         return checkLimit("api_${apiKey.hashCode()}", apiKeyLimitPerHour, "API key")
     }
 
-    private fun isAllowedByGuild(guildId: Long): Boolean {
+    private fun isAllowedByGuild(guildId: String): Boolean {
         return checkLimit("guild_$guildId", guildLimitPerHour, "guild")
     }
 
-    private fun isAllowedByUser(userId: Long): Boolean {
+    private fun isAllowedByUser(userId: String): Boolean {
         return checkLimit("user_$userId", userLimitPerHour, "user")
     }
 

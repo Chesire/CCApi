@@ -27,7 +27,7 @@ class JwtService {
         Keys.hmacShaKeyFor(secretKey.toByteArray())
     }
 
-    fun generateToken(userId: Long, guildId: Long): String =
+    fun generateToken(userId: String, guildId: String): String =
         try {
             val claims = mutableMapOf<String, Any>(
                 USER_ID to userId,
@@ -65,18 +65,18 @@ class JwtService {
             throw JwtConfigurationException("Token generation system error", ex)
         }
 
-    fun extractUserId(token: String): Long? =
+    fun extractUserId(token: String): String? =
         try {
             val claims = extractAllClaims(token)
-            claims[USER_ID]?.toString()?.toLongOrNull()
+            claims[USER_ID]?.toString()
         } catch (ex: Exception) {
             null
         }
 
-    fun extractGuildId(token: String): Long? =
+    fun extractGuildId(token: String): String? =
         try {
             val claims = extractAllClaims(token)
-            claims[GUILD_ID]?.toString()?.toLongOrNull()
+            claims[GUILD_ID]?.toString()
         } catch (ex: Exception) {
             null
         }
