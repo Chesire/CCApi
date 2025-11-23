@@ -24,7 +24,7 @@ class EventIntegrationTest : IntegrationTestBase() {
                 .body("""
                     {
                         "key": "challenge_completed",
-                        "userId": 123456789
+                        "userId": "123456789"
                     }
                 """.trimIndent())
             .`when`()
@@ -32,7 +32,7 @@ class EventIntegrationTest : IntegrationTestBase() {
             .then()
                 .statusCode(200)
                 .body("key", equalTo("challenge_completed"))
-                .body("userId", equalTo(123456789))
+                .body("userId", equalTo("123456789"))
                 .body("guildId", notNullValue())
                 .body("year", notNullValue())
                 .body("count", notNullValue())
@@ -46,7 +46,7 @@ class EventIntegrationTest : IntegrationTestBase() {
                 .body("""
                     {
                         "key": "",
-                        "userId": 123456789
+                        "userId": "123456789"
                     }
                 """.trimIndent())
             .`when`()
@@ -65,7 +65,7 @@ class EventIntegrationTest : IntegrationTestBase() {
                 .body("""
                     {
                         "key": "valid_key",
-                        "userId": -1
+                        "userId": "-1"
                     }
                 """.trimIndent())
             .`when`()
@@ -85,7 +85,7 @@ class EventIntegrationTest : IntegrationTestBase() {
                 .body("""
                     {
                         "key": "$longKey",
-                        "userId": 123456789
+                        "userId": "123456789"
                     }
                 """.trimIndent())
             .`when`()
@@ -104,7 +104,7 @@ class EventIntegrationTest : IntegrationTestBase() {
                 .body("""
                     {
                         "key": "test_key",
-                        "userId": 123456789
+                        "userId": "123456789"
                     }
                 """.trimIndent())
             .`when`()
